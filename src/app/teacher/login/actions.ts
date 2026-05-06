@@ -12,7 +12,19 @@ import { redirect } from "next/navigation";
  */
 export async function loginAction(formData: FormData): Promise<void> {
   const password = (formData.get("password") as string | null)?.trim() ?? "";
-  const ok = await verifyPasswordAndLogin(password);
+  let ok = false;
+  try {
+    ok = await verifyPasswordAndLogin(password);
+  } catch (err) {
+    console.error("[loginAction] verifyPasswordAndLogin threw", {
+      message: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+      envKeys: Object.keys(process.env).filter((k) =>
+        k.startsWith("TEACHER_DASHBOARD"),
+      ),
+    });
+    throw err;
+  }
   if (ok) {
     redirect("/teacher");
   }
