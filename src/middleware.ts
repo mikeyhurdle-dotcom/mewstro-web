@@ -7,16 +7,21 @@ const DOMAIN_MAP: Record<string, string> = {
   "www.spindlapp.com": "/spindl",
 };
 
-const TEACHER_HOSTS = new Set([
-  "studio.mewstro.com",
-  "www.studio.mewstro.com",
-]);
+const TEACHER_HOST = "studio.mewstro.com";
 
 export function middleware(request: NextRequest) {
   const hostname = request.headers.get("host")?.split(":")[0] ?? "";
   const path = request.nextUrl.pathname;
 
-  if (TEACHER_HOSTS.has(hostname)) {
+  // Canonical-hostname enforcement: 301 the www variant to the apex.
+  // Both hostnames have valid certs, but a single canonical URL avoids
+  // duplicate-content noise and keeps cookies / sessions on one host.
+  if (hostname === `www.${TEACHER_HOST}`) {
+    const target = `https://${TEACHER_HOST}${path}${request.nextUrl.search}`;
+    return NextResponse.redirect(target, 301);
+  }
+
+  if (hostname === TEACHER_HOST) {
     if (path.startsWith("/teacher")) return NextResponse.next();
 
     const url = request.nextUrl.clone();
