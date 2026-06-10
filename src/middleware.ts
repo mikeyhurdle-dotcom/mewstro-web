@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { updatePracticeSession } from "@/lib/practice/supabase/middleware";
 
 const DOMAIN_MAP: Record<string, string> = {
   "mewstro.com": "/mewstro",
@@ -9,7 +10,7 @@ const DOMAIN_MAP: Record<string, string> = {
 
 const TEACHER_HOST = "studio.mewstro.com";
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const hostname = request.headers.get("host")?.split(":")[0] ?? "";
   const path = request.nextUrl.pathname;
 
@@ -27,6 +28,13 @@ export function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = path === "/" ? "/teacher" : `/teacher${path}`;
     return NextResponse.rewrite(url);
+  }
+
+  // Student portal: lives at /practice on every host (so teachers can
+  // share mewstro.com/practice?code=...). Refreshes the Supabase session
+  // and gates unauthenticated access — see lib/practice/supabase/middleware.
+  if (path.startsWith("/practice")) {
+    return updatePracticeSession(request);
   }
 
   const prefix = DOMAIN_MAP[hostname];
