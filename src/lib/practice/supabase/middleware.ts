@@ -6,6 +6,9 @@ const PUBLIC_PATHS = [
   "/practice/sign-in",
   "/practice/sign-up",
   "/practice/auth/",
+  // Browsers fetch the manifest outside the page's auth context — it
+  // must stay public or Android install breaks.
+  "/practice/manifest.webmanifest",
 ];
 
 /**

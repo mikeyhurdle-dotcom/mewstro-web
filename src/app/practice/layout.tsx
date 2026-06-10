@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   // Deliberately low-profile: the portal is the Android bridge, not a
   // destination we promote. iPhone users belong in the App Store app.
   robots: { index: false, follow: false },
+  manifest: "/practice/manifest.webmanifest",
 };
 
 export const viewport: Viewport = {

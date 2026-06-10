@@ -62,6 +62,11 @@ const faqs = [
       "All of them. Mewstro is instrument-agnostic. Piano, voice, guitar, violin, drums, brass, woodwinds, and anything else you might teach. Each instrument has its own custom task types (scales, sight-reading, repertoire, technique, improvisation, and so on) so students can log the right kind of practice for what they're actually working on.",
   },
   {
+    question: "Have students on Android?",
+    answer:
+      "They can use the student portal — share your invite link and they can log practice, keep a streak, complete assignments, and show up on your studio leaderboard from the browser on any phone. The full native experience is on iPhone, with Android on the roadmap.",
+  },
+  {
     question: "What happens if I cancel?",
     answer:
       "Your students keep full Mewstro access for 30 days after you cancel, and then drop to the Free tier. Their practice data stays on their devices regardless, nothing gets deleted. You can resubscribe at any point and everyone's access comes straight back.",
