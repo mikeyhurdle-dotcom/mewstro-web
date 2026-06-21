@@ -672,20 +672,31 @@ export async function createAssignment(args: {
     );
   if (upsertErr) return { ok: false, error: upsertErr.message };
 
-  const { data: created, error: readErr } = await supabase
-    .from("mewstro_assignments")
-    .select("id")
-    .eq("idempotency_key", args.idempotencyKey)
-    .single();
-  if (readErr || !created) {
-    return { ok: false, error: readErr?.message ?? "Insert failed" };
+  // Read back the row for this idempotency key. Under a concurrent double-
+  // submit the losing request's ON CONFLICT skips the insert and then reads
+  // the winner's row — but if that insert isn't visible yet, retry once.
+  let createdId: string | null = null;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const { data } = await supabase
+      .from("mewstro_assignments")
+      .select("id")
+      .eq("idempotency_key", args.idempotencyKey)
+      .maybeSingle();
+    if (data?.id) {
+      createdId = data.id;
+      break;
+    }
+    if (attempt === 0) await new Promise((r) => setTimeout(r, 150));
+  }
+  if (!createdId) {
+    return { ok: false, error: "Insert failed" };
   }
 
   // Targets: PK is (assignment_id, student_user_id) so re-inserting on a
   // retry is naturally idempotent — ignore duplicates.
   if (args.studentUserIds.length > 0) {
     const rows = args.studentUserIds.map((uid) => ({
-      assignment_id: created.id,
+      assignment_id: createdId,
       student_user_id: uid,
     }));
     const { error: targetErr } = await supabase
@@ -699,5 +710,5 @@ export async function createAssignment(args: {
     }
   }
 
-  return { ok: true, id: created.id };
+  return { ok: true, id: createdId };
 }
