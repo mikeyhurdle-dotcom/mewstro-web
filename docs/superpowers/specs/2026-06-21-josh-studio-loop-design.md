@@ -6,7 +6,7 @@
 **Linear:** [HOBTRAC-218](https://linear.app/playsmashd-ltd/issue/HOBTRAC-218) (bug), [HOBTRAC-219](https://linear.app/playsmashd-ltd/issue/HOBTRAC-219) (dashboard + assets), [HOBTRAC-211](https://linear.app/playsmashd-ltd/issue/HOBTRAC-211) (combined instruments). Out of scope, parked: [HOBTRAC-220](https://linear.app/playsmashd-ltd/issue/HOBTRAC-220) (milestone cap), [HOBTRAC-101](https://linear.app/playsmashd-ltd/issue/HOBTRAC-101) (subsumed by §1).
 
 ## Repos
-- **Web teacher dashboard:** `app-landings/` (Next.js, `studio.mewstro.com`). Assignment + resource create/read, student dashboard.
+- **Web teacher dashboard:** `mewstro-web/` (Next.js, `studio.mewstro.com`). Assignment + resource create/read, student dashboard.
 - **iOS app:** `Mewstro/` (SwiftUI). Student-facing delivery (assignment card, resource card), instrument pairing.
 - **DB:** Supabase project `nspgvdytqsvnmbitbmey` (org "Meteora Mikey", currently Free plan).
 
@@ -26,16 +26,16 @@ Therefore: design the create/delivery contract once (§1), then hang the new sur
 ### Root cause (confirmed against live DB, 2026-06-21)
 Two genuinely-persisted, byte-identical assignment rows in Josh's studio targeting student "Celine", created **2.94s apart** (18:46:49.026 / 18:46:51.968). Two distinct faults:
 
-- **Fault 1 — persisted duplication (teacher's "2").** `createAssignment` (`app-landings/src/lib/teacher-queries.ts:639`) inserts exactly one assignment + one target per student per call — correct for a single call. But the flow is **non-idempotent**: the submit button (`app-landings/src/app/teacher/assignments/new/page.tsx:184`) has no pending/disabled state, and `mewstro_assignments` has **only `PRIMARY KEY (id)`** — no dedup. A double-click / action retry creates two rows. (`mewstro_assignment_targets` has a composite PK, which is why there were no within-assignment target dupes.)
+- **Fault 1 — persisted duplication (teacher's "2").** `createAssignment` (`mewstro-web/src/lib/teacher-queries.ts:639`) inserts exactly one assignment + one target per student per call — correct for a single call. But the flow is **non-idempotent**: the submit button (`mewstro-web/src/app/teacher/assignments/new/page.tsx:184`) has no pending/disabled state, and `mewstro_assignments` has **only `PRIMARY KEY (id)`** — no dedup. A double-click / action retry creates two rows. (`mewstro_assignment_targets` has a composite PK, which is why there were no within-assignment target dupes.)
 - **Fault 2 — student-side render (student's "3" + overlap).** The studio holds only 2 rows and the RPC `mewstro_get_my_assignments` is clean (filters completed, no row-multiplying join) — so "3" cannot come from data. iOS `AssignmentService.refresh()` (`Mewstro/Services/AssignmentService.swift:24`) can run **concurrently** (triggered by `.task(id:)`, `.onChange(scenePhase)`, and parent `refreshTrigger`) with a non-atomic check-then-insert → a duplicate SwiftData row, possibly same `id`. A `ForEach` over duplicate `Identifiable` ids (`Mewstro/Views/Practice/AssignmentsCard.swift:48`) collides in SwiftUI's diffing → **overlapping cards**.
 
 ### Fix (defense in depth)
 1. **Web idempotency:** mint a hidden `idempotency_key` (UUID) when the form renders; carry into `createAssignmentAction`; disable submit while pending via `useFormStatus`.
-2. **DB guard:** add `idempotency_key uuid` + `UNIQUE` to `mewstro_assignments`; `createAssignment` inserts `on conflict (idempotency_key) do nothing` → retry is a no-op. (Migration in `app-landings` supabase migrations + applied to `nspgvdytqsvnmbitbmey`.)
+2. **DB guard:** add `idempotency_key uuid` + `UNIQUE` to `mewstro_assignments`; `createAssignment` inserts `on conflict (idempotency_key) do nothing` → retry is a no-op. (Migration in `mewstro-web` supabase migrations + applied to `nspgvdytqsvnmbitbmey`.)
 3. **Targeting contract:** keep `createAssignment(studentUserIds[])` as the single path serving global / subset / single-student (§2 just preselects one). No fork.
 4. **iOS render fix:** serialise `refresh()` with an in-flight guard; dedupe the `@Query` result by `id` before the `ForEach`.
 5. **Data cleanup:** delete the orphan duplicate row `5ed9231d-7df5-45da-93c4-eec974a65e7f` from Josh's studio (`bce8078c-…`). Celine completed both, so user impact is cosmetic, but the teacher view should read 1.
-6. **Stale copy:** remove the "students don't see assignments inside the app yet — on the roadmap" block on `app-landings/src/app/teacher/assignments/page.tsx:133` (shipped in 1.0.2; Josh is reading it).
+6. **Stale copy:** remove the "students don't see assignments inside the app yet — on the roadmap" block on `mewstro-web/src/app/teacher/assignments/page.tsx:133` (shipped in 1.0.2; Josh is reading it).
 
 ### Tests
 - Double-submit (same idempotency key) creates exactly **one** assignment + intended targets.
@@ -50,7 +50,7 @@ Two genuinely-persisted, byte-identical assignment rows in Josh's studio targeti
 **Add:** an **Assignments** section in the student's profile area (the **Settings tab**, `Mewstro/Views/Settings/SettingsTabView.swift`) showing **all** assignments — active and completed — grouped Active / Completed, with completion dates and any completion notes.
 
 **Implementation:**
-- DB: new RPC `mewstro_get_my_assignment_history()` returning every assignment targeting the caller plus completion state (`completed_at`, `notes`) — mirrors the web `getAssignmentsForStudent` (`app-landings/src/lib/teacher-queries.ts:568`).
+- DB: new RPC `mewstro_get_my_assignment_history()` returning every assignment targeting the caller plus completion state (`completed_at`, `notes`) — mirrors the web `getAssignmentsForStudent` (`mewstro-web/src/lib/teacher-queries.ts:568`).
 - iOS: one read-only list view that fetches fresh from the RPC on open — **independent of the homepage card's cache**, so `markComplete`'s delete behaviour is untouched.
 - Homepage card stays the "active, do-it-now" surface; the profile list is the history.
 
@@ -60,7 +60,7 @@ Two genuinely-persisted, byte-identical assignment rows in Josh's studio targeti
 
 ## §2 — Student dashboard write actions · HOBTRAC-219 (slice)
 
-The dashboard already exists as a rich **read-only** view (`app-landings/src/app/teacher/students/[studentId]/page.tsx`): stats, 90-day heatmap, assignments, repertoire, recent sessions, milestone videos.
+The dashboard already exists as a rich **read-only** view (`mewstro-web/src/app/teacher/students/[studentId]/page.tsx`): stats, 90-day heatmap, assignments, repertoire, recent sessions, milestone videos.
 
 **Add:** a **"Set an assignment for this student"** action that opens the §1 create path with this student pre-targeted. Optionally an "Add resource for this student" entry once §3 lands.
 

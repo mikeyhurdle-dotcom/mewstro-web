@@ -4,17 +4,17 @@
 
 **Goal:** Make assignment creation idempotent (kill the duplicate-assignment bug), fix the overlapping student cards, and give students a profile area showing all their assignments incl. completed ones.
 
-**Architecture:** Two repos. Web teacher dashboard (`app-landings`, Next.js, service-role Supabase client) gets an idempotency key end-to-end + a DB unique constraint. iOS (`Mewstro`, SwiftUI) gets a concurrency-safe assignment refresh + id-deduped rendering + a new read-only history view backed by a new RPC. DB changes applied via the Supabase MCP to project `nspgvdytqsvnmbitbmey`.
+**Architecture:** Two repos. Web teacher dashboard (`mewstro-web`, Next.js, service-role Supabase client) gets an idempotency key end-to-end + a DB unique constraint. iOS (`Mewstro`, SwiftUI) gets a concurrency-safe assignment refresh + id-deduped rendering + a new read-only history view backed by a new RPC. DB changes applied via the Supabase MCP to project `nspgvdytqsvnmbitbmey`.
 
 **Tech Stack:** Next.js 16 (App Router, server actions), `@supabase/supabase-js` (service role), Postgres/Supabase, SwiftUI + SwiftData, XCTest.
 
 ## Global Constraints
-- Supabase project ref: `nspgvdytqsvnmbitbmey` (org "Meteora Mikey", Free plan). DB changes via Supabase MCP `apply_migration` (DDL) / `execute_sql` (verification). There is **no `supabase/` dir** in the app-landings main checkout.
+- Supabase project ref: `nspgvdytqsvnmbitbmey` (org "Meteora Mikey", Free plan). DB changes via Supabase MCP `apply_migration` (DDL) / `execute_sql` (verification). There is **no `supabase/` dir** in the mewstro-web main checkout.
 - Web `getServerSupabase()` uses the **service-role** key → RLS is bypassed; correctness must be enforced by DB constraints, not RLS.
-- app-landings has **no JS unit-test runner**. Web verification = `npx tsc --noEmit` + documented manual check. DB verification = `execute_sql`. iOS verification = XCTest (`MewstroTests`).
+- mewstro-web has **no JS unit-test runner**. Web verification = `npx tsc --noEmit` + documented manual check. DB verification = `execute_sql`. iOS verification = XCTest (`MewstroTests`).
 - Both repos are on `main` — create a feature branch in each before committing (`git checkout -b hobtrac-218-assignment-spine`).
 - iOS instrument/voice and resources are NOT in this plan (separate plans for §2/§3/§4).
-- Spec: `app-landings/docs/superpowers/specs/2026-06-21-josh-studio-loop-design.md` (§1, §1b).
+- Spec: `mewstro-web/docs/superpowers/specs/2026-06-21-josh-studio-loop-design.md` (§1, §1b).
 
 ---
 
@@ -68,11 +68,11 @@ Expected: `NOTICE: PASS: duplicate rejected` and no rows left behind.
 No `supabase/` dir exists, so document the applied DDL in the plan's repo for traceability:
 
 ```bash
-mkdir -p app-landings/docs/db-migrations
+mkdir -p mewstro-web/docs/db-migrations
 printf '%s\n' '-- applied to nspgvdytqsvnmbitbmey 2026-06-21 via MCP' \
-  '-- add_assignments_idempotency_key' > app-landings/docs/db-migrations/2026-06-21-add_assignments_idempotency_key.sql
+  '-- add_assignments_idempotency_key' > mewstro-web/docs/db-migrations/2026-06-21-add_assignments_idempotency_key.sql
 # (append the two DDL statements from Step 1 into that file)
-git add app-landings/docs/db-migrations/2026-06-21-add_assignments_idempotency_key.sql
+git add mewstro-web/docs/db-migrations/2026-06-21-add_assignments_idempotency_key.sql
 git commit -m "db(218): add idempotency_key + unique index to mewstro_assignments"
 ```
 
@@ -81,8 +81,8 @@ git commit -m "db(218): add idempotency_key + unique index to mewstro_assignment
 ### Task 2: Web — make `createAssignment` idempotent
 
 **Files:**
-- Modify: `app-landings/src/lib/teacher-queries.ts` (`createAssignment`, ~line 639)
-- Modify: `app-landings/src/app/teacher/assignments/new/actions.ts`
+- Modify: `mewstro-web/src/lib/teacher-queries.ts` (`createAssignment`, ~line 639)
+- Modify: `mewstro-web/src/app/teacher/assignments/new/actions.ts`
 
 **Interfaces:**
 - Consumes: `mewstro_assignments.idempotency_key` (Task 1).
@@ -182,13 +182,13 @@ In `new/actions.ts`, read the hidden key and pass it down:
 
 - [ ] **Step 3: Typecheck**
 
-Run: `cd app-landings && npx tsc --noEmit`
+Run: `cd mewstro-web && npx tsc --noEmit`
 Expected: no errors.
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add app-landings/src/lib/teacher-queries.ts app-landings/src/app/teacher/assignments/new/actions.ts
+git add mewstro-web/src/lib/teacher-queries.ts mewstro-web/src/app/teacher/assignments/new/actions.ts
 git commit -m "fix(218): idempotent createAssignment keyed on idempotency_key"
 ```
 
@@ -197,8 +197,8 @@ git commit -m "fix(218): idempotent createAssignment keyed on idempotency_key"
 ### Task 3: Web — mint key + disable submit while pending
 
 **Files:**
-- Create: `app-landings/src/app/teacher/assignments/new/SubmitButton.tsx`
-- Modify: `app-landings/src/app/teacher/assignments/new/page.tsx`
+- Create: `mewstro-web/src/app/teacher/assignments/new/SubmitButton.tsx`
+- Modify: `mewstro-web/src/app/teacher/assignments/new/page.tsx`
 
 **Interfaces:**
 - Consumes: nothing.
@@ -241,7 +241,7 @@ Replace the existing inline submit `<button type="submit" …>Create assignment<
 
 - [ ] **Step 3: Typecheck + build**
 
-Run: `cd app-landings && npx tsc --noEmit && npx next build`
+Run: `cd mewstro-web && npx tsc --noEmit && npx next build`
 Expected: compiles; `/teacher/assignments/new` builds.
 
 - [ ] **Step 4: Manual double-submit verification**
@@ -259,7 +259,7 @@ Expected: `1`.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add app-landings/src/app/teacher/assignments/new/SubmitButton.tsx app-landings/src/app/teacher/assignments/new/page.tsx
+git add mewstro-web/src/app/teacher/assignments/new/SubmitButton.tsx mewstro-web/src/app/teacher/assignments/new/page.tsx
 git commit -m "fix(218): hidden idempotency key + disabled-on-pending submit"
 ```
 
@@ -268,7 +268,7 @@ git commit -m "fix(218): hidden idempotency key + disabled-on-pending submit"
 ### Task 4: Web — remove stale "on the roadmap" assignment copy
 
 **Files:**
-- Modify: `app-landings/src/app/teacher/assignments/page.tsx` (the `{/* What your students see — iOS preview */}` block, ~lines 132-170, and the `IOSAssignmentPreview` component if now unused)
+- Modify: `mewstro-web/src/app/teacher/assignments/page.tsx` (the `{/* What your students see — iOS preview */}` block, ~lines 132-170, and the `IOSAssignmentPreview` component if now unused)
 
 **Interfaces:** none.
 
@@ -278,13 +278,13 @@ Remove the entire "On the roadmap / What your students will see / students don't
 
 - [ ] **Step 2: Typecheck**
 
-Run: `cd app-landings && npx tsc --noEmit`
+Run: `cd mewstro-web && npx tsc --noEmit`
 Expected: no errors (no unused-symbol references to `IOSAssignmentPreview`).
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add app-landings/src/app/teacher/assignments/page.tsx
+git add mewstro-web/src/app/teacher/assignments/page.tsx
 git commit -m "fix(218): remove stale 'assignments not in app yet' roadmap copy"
 ```
 
@@ -479,9 +479,9 @@ Expected: rows for Celine incl. the completed one (`done = true`), active rows f
 
 ```bash
 printf '%s\n' '-- applied to nspgvdytqsvnmbitbmey 2026-06-21 via MCP' \
-  '-- mewstro_get_my_assignment_history' > app-landings/docs/db-migrations/2026-06-21-mewstro_get_my_assignment_history.sql
+  '-- mewstro_get_my_assignment_history' > mewstro-web/docs/db-migrations/2026-06-21-mewstro_get_my_assignment_history.sql
 # (append the function DDL from Step 1)
-git add app-landings/docs/db-migrations/2026-06-21-mewstro_get_my_assignment_history.sql
+git add mewstro-web/docs/db-migrations/2026-06-21-mewstro_get_my_assignment_history.sql
 git commit -m "db(1b): mewstro_get_my_assignment_history RPC (active + completed)"
 ```
 
