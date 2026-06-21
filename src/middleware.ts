@@ -4,8 +4,6 @@ import { updatePracticeSession } from "@/lib/practice/supabase/middleware";
 const DOMAIN_MAP: Record<string, string> = {
   "mewstro.com": "/mewstro",
   "www.mewstro.com": "/mewstro",
-  "spindlapp.com": "/spindl",
-  "www.spindlapp.com": "/spindl",
 };
 
 const TEACHER_HOST = "studio.mewstro.com";
@@ -49,5 +47,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next|api|favicon.ico|mewstro/|spindl/).*)"],
+  matcher: ["/((?!_next|api|favicon.ico|mewstro/).*)"],
 };
