@@ -2,7 +2,9 @@ import { getActiveStudioName } from "@/lib/teacher-auth";
 import { getStudioOverview } from "@/lib/teacher-queries";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { randomUUID } from "crypto";
 import { createAssignmentAction } from "./actions";
+import { SubmitButton } from "./SubmitButton";
 
 export const metadata = {
   title: "New assignment · Mewstro Teacher",
@@ -36,6 +38,7 @@ export default async function NewAssignmentPage({
   const overview = await getStudioOverview(studioName);
   const params = await searchParams;
   const errorMessage = errorFor(params.error);
+  const idempotencyKey = randomUUID();
 
   // Suggested default due date: next Sunday
   const suggestedDueDate = (() => {
@@ -67,6 +70,7 @@ export default async function NewAssignmentPage({
       )}
 
       <form action={createAssignmentAction} className="mt-8 space-y-6">
+        <input type="hidden" name="idempotencyKey" value={idempotencyKey} />
         {/* Title */}
         <div>
           <label
@@ -181,12 +185,7 @@ export default async function NewAssignmentPage({
           >
             Cancel
           </Link>
-          <button
-            type="submit"
-            className="rounded-lg bg-[#2D8B7E] px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#246F64] transition-colors"
-          >
-            Create assignment
-          </button>
+          <SubmitButton />
         </div>
       </form>
     </div>
