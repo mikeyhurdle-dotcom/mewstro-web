@@ -6,6 +6,7 @@ import {
   createResourceAction,
   updateResourceAction,
   deleteResourceAction,
+  uploadDocumentResourceAction,
 } from "./actions";
 
 // Instrument list — mirrors iOS InstrumentType enum
@@ -27,14 +28,15 @@ const INSTRUMENTS = [
 const TYPE_OPTIONS: Array<{
   value: string;
   label: string;
-  disabled?: boolean;
 }> = [
   { value: "link", label: "Link" },
   { value: "embed", label: "Embed (YouTube / Vimeo)" },
-  { value: "document", label: "Document (PDF — coming soon)", disabled: true },
+  { value: "document", label: "Document (PDF)" },
 ];
 
-type ResourceType = "link" | "embed";
+const MAX_PDF_BYTES = 26214400; // 25 MiB
+
+type ResourceType = "link" | "embed" | "document";
 type AudienceType = "studio" | "instrument" | "student";
 
 const AUDIENCE_BADGE: Record<AudienceType, string> = {
@@ -340,8 +342,61 @@ function AddMaterialForm({ students }: { students: StudentOption[] }) {
     INSTRUMENTS[0],
   );
   const [audienceStudentUserId, setAudienceStudentUserId] = useState("");
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [ipChecked, setIpChecked] = useState(false);
+
+  function handleTypeChange(newType: ResourceType) {
+    setType(newType);
+    setFileError(null);
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) {
+      setFileError(null);
+      return;
+    }
+    if (f.type !== "application/pdf") {
+      setFileError("Only PDF files are accepted.");
+      e.target.value = "";
+      return;
+    }
+    if (f.size > MAX_PDF_BYTES) {
+      setFileError("File exceeds the 25 MB limit. Please choose a smaller PDF.");
+      e.target.value = "";
+      return;
+    }
+    setFileError(null);
+  }
 
   async function handleAdd(formData: FormData) {
+    // Client-side guard for document type
+    if (type === "document") {
+      const f = formData.get("pdfFile");
+      if (!(f instanceof File) || f.size === 0) {
+        setFileError("Please select a PDF file.");
+        return;
+      }
+      if (f.type !== "application/pdf") {
+        setFileError("Only PDF files are accepted.");
+        return;
+      }
+      if (f.size > MAX_PDF_BYTES) {
+        setFileError("File exceeds the 25 MB limit.");
+        return;
+      }
+      if (!ipChecked) {
+        setFileError("You must confirm you have the right to share this material.");
+        return;
+      }
+      formData.set("ipAttestation", "true");
+      setBusy(true);
+      await uploadDocumentResourceAction(formData);
+      setBusy(false);
+      setOpen(false);
+      return;
+    }
+
     setBusy(true);
     await createResourceAction(formData);
     setBusy(false);
@@ -376,14 +431,9 @@ function AddMaterialForm({ students }: { students: StudentOption[] }) {
               <button
                 key={opt.value}
                 type="button"
-                disabled={opt.disabled}
-                onClick={() => {
-                  if (!opt.disabled) setType(opt.value as ResourceType);
-                }}
+                onClick={() => handleTypeChange(opt.value as ResourceType)}
                 className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
-                  opt.disabled
-                    ? "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed"
-                    : type === opt.value
+                  type === opt.value
                     ? "border-[#2D8B7E] bg-[#2D8B7E] text-white"
                     : "border-[#E8DFD3] bg-white text-[#6B7280] hover:border-[#2D8B7E]/40"
                 }`}
@@ -420,23 +470,63 @@ function AddMaterialForm({ students }: { students: StudentOption[] }) {
           />
         </div>
 
-        {/* URL */}
-        <div>
-          <label className="mb-1 block text-xs font-medium text-[#6B7280]">
-            URL <span className="text-red-500">*</span>
-          </label>
-          <input
-            name="url"
-            type="url"
-            required
-            placeholder={
-              type === "embed"
-                ? "https://youtu.be/… or https://vimeo.com/…"
-                : "https://…"
-            }
-            className="w-full rounded-lg border border-[#E8DFD3] bg-white px-3 py-2 text-sm text-[#1A1A2E] focus:border-[#2D8B7E] focus:outline-none"
-          />
-        </div>
+        {/* URL — link and embed only */}
+        {type !== "document" && (
+          <div>
+            <label className="mb-1 block text-xs font-medium text-[#6B7280]">
+              URL <span className="text-red-500">*</span>
+            </label>
+            <input
+              name="url"
+              type="url"
+              required
+              placeholder={
+                type === "embed"
+                  ? "https://youtu.be/… or https://vimeo.com/…"
+                  : "https://…"
+              }
+              className="w-full rounded-lg border border-[#E8DFD3] bg-white px-3 py-2 text-sm text-[#1A1A2E] focus:border-[#2D8B7E] focus:outline-none"
+            />
+          </div>
+        )}
+
+        {/* PDF upload — document type only */}
+        {type === "document" && (
+          <div className="space-y-3">
+            <div>
+              <label className="mb-1 block text-xs font-medium text-[#6B7280]">
+                PDF file <span className="text-red-500">*</span>
+              </label>
+              <input
+                name="pdfFile"
+                type="file"
+                accept="application/pdf"
+                required
+                onChange={handleFileChange}
+                className="w-full rounded-lg border border-[#E8DFD3] bg-white px-3 py-2 text-sm text-[#1A1A2E] file:mr-3 file:rounded file:border-0 file:bg-[#2D8B7E]/10 file:px-3 file:py-1 file:text-xs file:font-medium file:text-[#2D8B7E] focus:border-[#2D8B7E] focus:outline-none"
+              />
+              <p className="mt-1 text-xs text-[#6B7280]">PDF only · max 25 MB</p>
+              {fileError && (
+                <p className="mt-1 text-xs font-medium text-red-600">{fileError}</p>
+              )}
+            </div>
+
+            {/* IP attestation */}
+            <label className="flex cursor-pointer items-start gap-2.5">
+              <input
+                type="checkbox"
+                checked={ipChecked}
+                onChange={(e) => setIpChecked(e.target.checked)}
+                className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-[#E8DFD3] text-[#2D8B7E] focus:ring-[#2D8B7E]"
+              />
+              <span className="text-xs text-[#6B7280]">
+                I confirm that I have the right to share this material with my
+                students (e.g. I created it, or have a licence to distribute it).{" "}
+                <span className="text-red-500">*</span>
+              </span>
+            </label>
+          </div>
+        )}
 
         <AudienceSelector
           audience={audience}
@@ -462,7 +552,7 @@ function AddMaterialForm({ students }: { students: StudentOption[] }) {
             disabled={busy}
             className="rounded-lg bg-[#2D8B7E] px-4 py-1.5 text-sm font-semibold text-white hover:bg-[#246F64] disabled:opacity-50"
           >
-            {busy ? "Saving…" : "Add material"}
+            {busy ? "Uploading…" : "Add material"}
           </button>
         </div>
       </form>
