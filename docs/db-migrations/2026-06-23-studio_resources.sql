@@ -1,0 +1,6 @@
+-- applied to nspgvdytqsvnmbitbmey 2026-06-23 via MCP
+-- studio_resources: table + get_my_resources RPC + studio-resources bucket + entitlement RLS
+-- (see mewstro-web/docs/superpowers/plans/2026-06-23-studio-materials.md Tasks 1-2 for full DDL)
+-- Table mewstro_studio_resources (type link/embed/document, audience studio/instrument/student,
+--   soft-delete, reuse set_updated_at trigger), RPC mewstro_get_my_resources() SECURITY DEFINER,
+--   private bucket studio-resources (25MiB, application/pdf), storage policy studio_resources_read.
