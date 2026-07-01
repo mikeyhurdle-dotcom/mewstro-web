@@ -222,6 +222,27 @@ function AssignmentCard({ assignment }: { assignment: AssignmentRow }) {
           })}
         </div>
       )}
+
+      {/* Completion notes — "how it went", per student */}
+      {assignment.completions.some((c) => c.notes && c.notes.trim()) && (
+        <div className="mt-4 space-y-2 border-t border-[#F0EBE2] pt-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#6B7280]">
+            Notes from students
+          </p>
+          {assignment.completions
+            .filter((c) => c.notes && c.notes.trim())
+            .map((c) => (
+              <div key={c.userId} className="flex gap-2 text-sm">
+                <span className="shrink-0 font-medium text-[#2D8B7E]">
+                  {c.displayName}
+                </span>
+                <span className="italic text-[#5A4E42]">
+                  &ldquo;{c.notes}&rdquo;
+                </span>
+              </div>
+            ))}
+        </div>
+      )}
     </div>
   );
 }
