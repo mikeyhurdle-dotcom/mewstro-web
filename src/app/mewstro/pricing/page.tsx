@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CheckoutButtons } from "@/components/mewstro/CheckoutButtons";
+import { formatPriceLabel, isBillingEnabled } from "@/lib/billing/plans";
+import type { PlanKey } from "@/lib/billing/plans";
 
 export const metadata: Metadata = {
   title: "Pricing — Mewstro",
@@ -7,9 +10,20 @@ export const metadata: Metadata = {
     "Mewstro is built for music teachers and their students. Teachers pay one simple monthly fee and every student in their studio gets full access included. Solo learners can subscribe directly. 30-day teacher trial, 7-day solo trial, honest pricing, easy to cancel.",
 };
 
-const teacherTiers = [
+const teacherTiers: Array<{
+  name: string;
+  plan: PlanKey;
+  price: string;
+  period: string;
+  annual: string;
+  description: string;
+  features: string[];
+  highlighted: boolean;
+  cta: string;
+}> = [
   {
     name: "Studio",
+    plan: "studio",
     price: "£14.99",
     period: "/ month",
     annual: "or £149/year, saves you £30",
@@ -31,6 +45,7 @@ const teacherTiers = [
   },
   {
     name: "Studio Unlimited",
+    plan: "studio_unlimited",
     price: "£24.99",
     period: "/ month",
     annual: "or £249/year, saves you £50",
@@ -137,6 +152,10 @@ function BuiltWithTeachersCard() {
 }
 
 export default function MewstroPricingPage() {
+  // Stripe checkout ships dark: until NEXT_PUBLIC_BILLING_ENABLED="true" is
+  // set in Vercel the page keeps its apply-only CTAs, byte-for-byte.
+  const billingEnabled = isBillingEnabled();
+
   return (
     <div className="min-h-screen bg-[#FFFBF7] text-[#1A1A2E]">
       {/* Hero */}
@@ -225,22 +244,49 @@ export default function MewstroPricingPage() {
                   ))}
                 </ul>
 
-                <Link
-                  href="/mewstro/teachers/apply"
-                  className={`mt-8 block rounded-xl px-5 py-4 text-center text-sm font-semibold transition-transform hover:scale-[1.02] ${
-                    tier.highlighted
-                      ? "bg-white text-[#2D8B7E]"
-                      : "bg-[#2D8B7E] text-white"
-                  }`}
-                >
-                  {tier.cta}
-                </Link>
-                <p
-                  className={`mt-3 text-xs text-center ${tier.highlighted ? "text-white/70" : "text-[#6B7280]"}`}
-                >
-                  Applications reviewed personally. Founding Studio rate
-                  gets you 50% off for life, first five studios only.
-                </p>
+                {billingEnabled ? (
+                  <>
+                    <CheckoutButtons
+                      plan={tier.plan}
+                      monthlyLabel={formatPriceLabel(tier.plan, "month")}
+                      annualLabel={formatPriceLabel(tier.plan, "year")}
+                      highlighted={tier.highlighted}
+                    />
+                    <p
+                      className={`mt-3 text-xs text-center ${tier.highlighted ? "text-white/70" : "text-[#6B7280]"}`}
+                    >
+                      Card required, first charge on day 31, cancel any
+                      time from your dashboard. After a Founding Studio
+                      slot instead?{" "}
+                      <Link
+                        href="/mewstro/teachers/apply"
+                        className="underline"
+                      >
+                        Apply here
+                      </Link>
+                      .
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/mewstro/teachers/apply"
+                      className={`mt-8 block rounded-xl px-5 py-4 text-center text-sm font-semibold transition-transform hover:scale-[1.02] ${
+                        tier.highlighted
+                          ? "bg-white text-[#2D8B7E]"
+                          : "bg-[#2D8B7E] text-white"
+                      }`}
+                    >
+                      {tier.cta}
+                    </Link>
+                    <p
+                      className={`mt-3 text-xs text-center ${tier.highlighted ? "text-white/70" : "text-[#6B7280]"}`}
+                    >
+                      Applications reviewed personally. Founding Studio rate
+                      gets you 50% off for life, first five studios only.
+                    </p>
+                  </>
+                )}
               </div>
             ))}
           </div>
