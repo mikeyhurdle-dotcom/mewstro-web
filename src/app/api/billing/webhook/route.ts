@@ -8,6 +8,12 @@ import {
   subscriptionRowFromStripe,
   type SubscriptionRowPatch,
 } from "@/lib/billing/subscription-sync";
+import {
+  PLANS,
+  formatPriceLabel,
+  isBillingInterval,
+  isPlanKey,
+} from "@/lib/billing/plans";
 
 /**
  * Stripe webhook — the single source of truth for subscription state.
@@ -147,6 +153,14 @@ async function handleCheckoutCompleted(
     studioId,
     teacherEmail,
   });
+
+  if (teacherEmail) {
+    sendTeacherWelcome({
+      to: teacherEmail,
+      name: session.customer_details?.name ?? null,
+      patch,
+    });
+  }
 
   if (studioId) {
     await syncStudioActive(supabase, studioId, patch.status);
@@ -302,6 +316,61 @@ async function syncStudioActive(
     .update({ is_active: isStudioActive(status) })
     .eq("id", studioId);
   if (error) throw new Error(`studio is_active sync failed: ${error.message}`);
+}
+
+// Fire-and-forget day-0 welcome email via the Postmark template
+// `teacher-welcome-trial`. The promises in the copy (reminder before first
+// charge, one-click cancel) must stay in step with /pricing and the day-23
+// mewstro-trial-reminder edge function.
+function sendTeacherWelcome(args: {
+  to: string;
+  name: string | null;
+  patch: SubscriptionRowPatch;
+}): void {
+  const token = process.env.POSTMARK_SERVER_TOKEN;
+  if (!token) return;
+
+  const plan = isPlanKey(args.patch.plan) ? args.patch.plan : "studio";
+  const interval = isBillingInterval(args.patch.billing_interval)
+    ? args.patch.billing_interval
+    : "month";
+  const founding = args.patch.founding === true;
+  const priceLabel = formatPriceLabel(plan, interval, {
+    foundingDiscount: founding,
+  }).replace("/", " per ");
+
+  const trialEnd = args.patch.trial_ends_at
+    ? new Date(args.patch.trial_ends_at)
+    : null;
+  const firstChargeDate = trialEnd
+    ? trialEnd.toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : "the end of your 30-day trial";
+
+  const postmark = new ServerClient(token);
+  void postmark
+    .sendEmailWithTemplate({
+      From: "Mikey from Mewstro <mikey@mewstro.com>",
+      To: args.to,
+      TemplateAlias: "teacher-welcome-trial",
+      TemplateModel: {
+        teacher_name: args.name?.trim().split(/\s+/)[0] || "there",
+        plan_label: PLANS[plan].label,
+        price_label: priceLabel,
+        first_charge_date: firstChargeDate,
+        founding: founding || undefined,
+        billing_url: "https://mewstro.com/teacher/billing",
+      },
+      MessageStream: "outbound",
+      TrackOpens: true,
+    })
+    .catch((err) => {
+      // Welcome email must never break webhook processing.
+      console.error("billing/webhook: welcome email failed", err);
+    });
 }
 
 // Fire-and-forget ops email — never blocks or fails the webhook response.
