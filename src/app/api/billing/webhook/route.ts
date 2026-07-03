@@ -312,7 +312,7 @@ function notifyMikey(subject: string, text: string): void {
   const postmark = new ServerClient(token);
   void postmark
     .sendEmail({
-      From: "Mewstro <noreply@mewstro.com>",
+      From: "Mewstro <mikey@mewstro.com>",
       To: notifyEmail,
       Subject: subject,
       TextBody: text,
