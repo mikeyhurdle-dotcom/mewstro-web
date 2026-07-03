@@ -45,6 +45,12 @@ export default async function TeacherLayout({
           {loggedIn && (
             <div className="flex items-center gap-5">
               <Link
+                href="/teacher/billing"
+                className="text-sm text-[#6B7280] hover:text-[#2D8B7E] transition-colors"
+              >
+                Billing
+              </Link>
+              <Link
                 href="/teacher/help"
                 className="text-sm text-[#6B7280] hover:text-[#2D8B7E] transition-colors"
               >
