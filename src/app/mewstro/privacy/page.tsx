@@ -23,6 +23,11 @@ const sections = [
       "Your practice data is used solely to provide the app's functionality — tracking sessions, calculating streaks, displaying progress, and powering widgets.\n\nIf you join a teacher's studio, your practice summary (not detailed session data) is shared with your teacher.\n\nWe never sell, rent, or share your personal data with third parties for marketing purposes.",
   },
   {
+    title: "Embedded Video (YouTube)",
+    content:
+      "Teachers can share video links with their studio, and these play inside the app using YouTube's privacy-enhanced embedded player (youtube-nocookie.com). In this mode, YouTube does not store personalised tracking cookies unless you actually play the video.\n\nWhen you play an embedded video, YouTube (Google) may collect information such as your IP address and device details under its own privacy policy — see policies.google.com/privacy. We never send your Mewstro account details, practice data, or identity to YouTube, and Mewstro receives no data back from Google about what you watch.",
+  },
+  {
     title: "Data Storage & Security",
     content:
       "Local data is stored in SwiftData on your device. Cloud sync uses Apple's CloudKit, which encrypts data in transit and at rest.\n\nAccount data is stored in Supabase (EU region) with row-level security enabled.\n\nWe do not store any payment information — all purchases are handled by Apple through StoreKit.",
