@@ -8,6 +8,10 @@ import {
   isBillingInterval,
   isPlanKey,
 } from "@/lib/billing/plans";
+import {
+  STUDIO_NAME_FIELD_KEY,
+  STUDIO_NAME_MAX_LENGTH,
+} from "@/lib/billing/provisioning";
 
 /**
  * Creates a Stripe Checkout Session for a teacher subscription.
@@ -91,6 +95,20 @@ export async function POST(req: NextRequest) {
   const params: Stripe.Checkout.SessionCreateParams = {
     mode: "subscription",
     line_items: [{ price: priceId, quantity: 1 }],
+    // The one onboarding question we ask at checkout. The webhook reads
+    // this to auto-provision the studio row (see billing/provisioning.ts).
+    custom_fields: [
+      {
+        key: STUDIO_NAME_FIELD_KEY,
+        label: {
+          type: "custom",
+          custom: "Studio name (what your students will see)",
+        },
+        type: "text",
+        optional: false,
+        text: { maximum_length: STUDIO_NAME_MAX_LENGTH, minimum_length: 2 },
+      },
+    ],
     // Card required at signup even though day 1–30 is free; if the teacher
     // somehow removes it before day 31, cancel rather than invoice thin air.
     payment_method_collection: "always",
