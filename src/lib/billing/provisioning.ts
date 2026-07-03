@@ -10,8 +10,12 @@
 /** Matches the custom field key set in /api/billing/checkout. */
 export const STUDIO_NAME_FIELD_KEY = "studio_name";
 
-/** Mirrors Stripe's checkout custom-field maximum we configure. */
-export const STUDIO_NAME_MAX_LENGTH = 80;
+/**
+ * Mirrors Stripe's checkout custom-field maximum we configure. 40 keeps
+ * names readable on every surface that renders them (welcome-email studio
+ * card, dashboard header, weekly digest, iOS leaderboard title).
+ */
+export const STUDIO_NAME_MAX_LENGTH = 40;
 
 export const DEFAULT_STUDIO_NAME = "Your Mewstro Studio";
 
