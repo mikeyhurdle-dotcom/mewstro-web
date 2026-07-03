@@ -86,7 +86,7 @@ export default async function CheckoutSuccessPage({
           </p>
           {summary.email && (
             <p className="mt-3 text-sm text-[#6B7280]">
-              A receipt confirmation is on its way to{" "}
+              A welcome email with the details is on its way to{" "}
               <strong className="text-[#1A1A2E]">{summary.email}</strong>.
             </p>
           )}
@@ -113,18 +113,16 @@ export default async function CheckoutSuccessPage({
 
           <div className="mt-10 flex flex-col sm:flex-row justify-center gap-3">
             <Link
-              href="/teacher"
-              className="inline-block rounded-full bg-[#2D8B7E] px-8 py-4 text-base font-semibold text-white transition-colors hover:bg-[#246F64]"
-            >
-              Go to the teacher dashboard
-            </Link>
-            <Link
               href="/mewstro"
-              className="inline-block rounded-full border border-[#E8DFD3] bg-white px-8 py-4 text-base font-semibold text-[#1A1A2E] transition-colors hover:bg-[#FAF6EF]"
+              className="inline-block rounded-full bg-[#2D8B7E] px-8 py-4 text-base font-semibold text-white transition-colors hover:bg-[#246F64]"
             >
               Back to mewstro.com
             </Link>
           </div>
+          <p className="mt-4 text-sm text-[#6B7280]">
+            Your studio dashboard link and sign-in details arrive with your
+            setup email — no need to do anything until then.
+          </p>
 
           <p className="mt-10 text-sm text-[#6B7280]">
             Questions, or anything not working? Email me directly at{" "}
