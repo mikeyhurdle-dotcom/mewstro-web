@@ -14,6 +14,12 @@ import {
   isBillingInterval,
   isPlanKey,
 } from "@/lib/billing/plans";
+import {
+  extractStudioNameField,
+  resolveProvisionNames,
+  uniqueStudioName,
+} from "@/lib/billing/provisioning";
+import { generateInviteCode } from "@/lib/billing/invite-code";
 
 /**
  * Stripe webhook — the single source of truth for subscription state.
@@ -138,15 +144,45 @@ async function handleCheckoutCompleted(
 
   // Resolve the studio: explicit reference from the dashboard flow first,
   // then fall back to matching the teacher's email on mewstro_studios.
+  // (Josh/Ellie path — a pre-existing studio keeps its exact old behaviour.)
   let studioId =
     session.client_reference_id ?? session.metadata?.mewstro_studio_id ?? null;
-  if (!studioId && teacherEmail) {
+  let studioInfo: { studio_name: string; invite_code: string } | null = null;
+  if (studioId) {
     const { data: studio } = await supabase
       .from("mewstro_studios")
-      .select("id")
+      .select("studio_name, invite_code")
+      .eq("id", studioId)
+      .maybeSingle();
+    studioInfo = studio ?? null;
+  } else if (teacherEmail) {
+    const { data: studio } = await supabase
+      .from("mewstro_studios")
+      .select("id, studio_name, invite_code")
       .ilike("teacher_email", teacherEmail)
       .maybeSingle();
     studioId = studio?.id ?? null;
+    studioInfo = studio
+      ? { studio_name: studio.studio_name, invite_code: studio.invite_code }
+      : null;
+  }
+
+  // Self-serve path: no existing studio matched, so auto-provision one from
+  // the checkout details. Never let a provisioning hiccup fail the webhook —
+  // fall back to the old "save unlinked + tell Mikey" behaviour instead.
+  let provisioned = false;
+  if (!studioId && teacherEmail) {
+    try {
+      const created = await provisionStudio(supabase, session, teacherEmail);
+      studioId = created.id;
+      studioInfo = {
+        studio_name: created.studio_name,
+        invite_code: created.invite_code,
+      };
+      provisioned = true;
+    } catch (err) {
+      console.error("billing/webhook: studio auto-provision failed", err);
+    }
   }
 
   await upsertSubscriptionRow(supabase, patch, {
@@ -159,15 +195,40 @@ async function handleCheckoutCompleted(
       to: teacherEmail,
       name: session.customer_details?.name ?? null,
       patch,
+      studio: studioInfo,
     });
   }
 
   if (studioId) {
     await syncStudioActive(supabase, studioId, patch.status);
-  } else {
-    // No studio row yet (e.g. teacher checked out straight from the pricing
-    // page before Mikey created their studio). Row is saved unlinked;
-    // flag it for manual linking.
+  }
+
+  if (provisioned && studioInfo) {
+    // Informational, not action-blocking: the studio is live and the teacher
+    // already has everything they need. Mikey's touch is the intro call.
+    notifyMikey(
+      "New Mewstro studio auto-provisioned",
+      [
+        `A teacher just self-served through Stripe checkout and their studio`,
+        `was created automatically. Nothing is blocked — they have their`,
+        `invite code and dashboard sign-in already.`,
+        ``,
+        `Teacher:      ${session.customer_details?.name ?? "unknown"} <${teacherEmail}>`,
+        `Studio:       ${studioInfo.studio_name}`,
+        `Invite code:  ${studioInfo.invite_code}`,
+        `Plan:         ${patch.plan ?? "unknown"} (${patch.billing_interval ?? "?"})`,
+        `Founding:     ${patch.founding ? "yes" : "no"}`,
+        `Subscription: ${patch.stripe_subscription_id}`,
+        ``,
+        `Your two follow-ups (when you get a minute):`,
+        `  1. Book their intro call — they've been told to reply to the`,
+        `     welcome email to arrange it.`,
+        `  2. Create their Apple offer code for the iOS app.`,
+      ].join("\n"),
+    );
+  } else if (!studioId) {
+    // No studio row and provisioning wasn't possible (no email) or failed.
+    // Row is saved unlinked; flag it for manual linking as before.
     notifyMikey(
       "Stripe checkout needs a studio link",
       [
@@ -183,6 +244,63 @@ async function handleCheckoutCompleted(
         `mewstro_studio_subscriptions row for that subscription.`,
       ].join("\n"),
     );
+  }
+}
+
+/**
+ * Creates the mewstro_studios row for a self-serve checkout. Studio name
+ * comes from the checkout custom field (fallbacks in provisioning.ts),
+ * disambiguated because dashboard queries scope by name; the invite code
+ * is derived from the name and collision-checked against existing codes.
+ * Retries once on an invite-code unique violation (webhook race).
+ */
+async function provisionStudio(
+  supabase: Supabase,
+  session: Stripe.Checkout.Session,
+  teacherEmail: string,
+): Promise<{ id: string; studio_name: string; invite_code: string }> {
+  const { studioName, teacherName } = resolveProvisionNames({
+    studioNameField: extractStudioNameField(session.custom_fields),
+    customerName: session.customer_details?.name ?? null,
+    teacherEmail,
+  });
+
+  const finalName = await uniqueStudioName(studioName, async (name) => {
+    const { data, error } = await supabase
+      .from("mewstro_studios")
+      .select("id")
+      .ilike("studio_name", name)
+      .limit(1);
+    if (error) throw new Error(`studio name check failed: ${error.message}`);
+    return (data?.length ?? 0) > 0;
+  });
+
+  const codeTaken = async (code: string): Promise<boolean> => {
+    const { data, error } = await supabase
+      .from("mewstro_studios")
+      .select("id")
+      .eq("invite_code", code)
+      .limit(1);
+    if (error) throw new Error(`invite code check failed: ${error.message}`);
+    return (data?.length ?? 0) > 0;
+  };
+
+  for (let attempt = 0; ; attempt++) {
+    const inviteCode = await generateInviteCode(finalName, codeTaken);
+    const { data, error } = await supabase
+      .from("mewstro_studios")
+      .insert({
+        studio_name: finalName,
+        teacher_name: teacherName,
+        teacher_email: teacherEmail,
+        invite_code: inviteCode,
+        is_active: true,
+      })
+      .select("id, studio_name, invite_code")
+      .single();
+    if (!error && data) return data;
+    if (error?.code === "23505" && attempt === 0) continue; // code race — regenerate
+    throw new Error(`studio insert failed: ${error?.message ?? "no row"}`);
   }
 }
 
@@ -321,11 +439,16 @@ async function syncStudioActive(
 // Fire-and-forget day-0 welcome email via the Postmark template
 // `teacher-welcome-trial`. The promises in the copy (reminder before first
 // charge, one-click cancel) must stay in step with /pricing and the day-23
-// mewstro-trial-reminder edge function.
+// mewstro-trial-reminder edge function. When a studio is linked (matched or
+// auto-provisioned) the email also carries the studio name, the student
+// invite code, and the magic-link dashboard sign-in explanation — the
+// template renders that block only when studio_name is present, so the
+// rare unlinked checkout still gets a valid welcome.
 function sendTeacherWelcome(args: {
   to: string;
   name: string | null;
   patch: SubscriptionRowPatch;
+  studio: { studio_name: string; invite_code: string } | null;
 }): void {
   const token = process.env.POSTMARK_SERVER_TOKEN;
   if (!token) return;
@@ -363,6 +486,13 @@ function sendTeacherWelcome(args: {
         first_charge_date: firstChargeDate,
         founding: founding || undefined,
         billing_url: "https://mewstro.com/teacher/billing",
+        ...(args.studio
+          ? {
+              studio_name: args.studio.studio_name,
+              invite_code: args.studio.invite_code,
+              dashboard_url: "https://studio.mewstro.com",
+            }
+          : {}),
       },
       MessageStream: "outbound",
       TrackOpens: true,
