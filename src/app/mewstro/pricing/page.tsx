@@ -127,27 +127,32 @@ const commitments = [
 
 function BuiltWithTeachersCard() {
   return (
-    <div className="rounded-2xl border border-[#E8DFD3] bg-white p-8 shadow-sm">
-      <div className="flex items-start gap-4">
-        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[#2D8B7E] text-2xl">
-          🎹
-        </div>
-        <div>
-          <h3 className="text-lg font-bold">
-            This was designed inside a working music studio
-          </h3>
-          <p className="mt-2 text-sm text-[#5A4E42]">
-            Every teacher-facing feature has to pass the &ldquo;would
-            Ellie actually use this with her own studio?&rdquo; test
-            before it goes out. Ellie Moorhouse is my own piano teacher
-            and the founding pilot, and the whole app has been shaped
-            by how she actually teaches. Once her studio has been on
-            Mewstro for long enough to have a real view on it, her own
-            words will live here.
-          </p>
-        </div>
-      </div>
-    </div>
+    <figure className="rounded-2xl border border-[#E8DFD3] bg-white p-8 shadow-sm">
+      <p className="text-xs uppercase tracking-wider text-[#6B7280]">
+        From a founding studio
+      </p>
+      <blockquote className="mt-4 text-lg leading-relaxed text-[#1A1A2E]">
+        &ldquo;Overall Mewstro has given me a clearer understanding of my
+        students&apos; activity in between lessons. It has allowed me greater
+        ease of sharing learning materials with my students and has enabled me
+        to have a source of contact which was missing before using the
+        app.&rdquo;
+      </blockquote>
+      <figcaption className="mt-5">
+        <span className="text-sm font-semibold text-[#1A1A2E]">
+          Josh Ingram
+        </span>
+        <span className="ml-2 text-xs text-[#6B7280]">
+          Founding Studio #2
+        </span>
+      </figcaption>
+      <Link
+        href="/mewstro/case-study"
+        className="mt-4 inline-block text-sm font-semibold text-[#2D8B7E] hover:underline"
+      >
+        Read Josh&apos;s first four weeks →
+      </Link>
+    </figure>
   );
 }
 

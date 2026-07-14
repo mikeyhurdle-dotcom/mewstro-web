@@ -438,27 +438,56 @@ function DashboardTour() {
   );
 }
 
-function EllieQuoteBand() {
+function FoundingProofBand() {
   return (
     <section className="bg-white px-6 py-16">
-      <div className="mx-auto max-w-3xl rounded-3xl border border-[#E8DFD3] bg-[#FAF6EF] p-8 md:p-10">
-        <p className="text-xs uppercase tracking-wider text-[#6B7280]">
-          From the founding studio
+      <div className="mx-auto max-w-5xl">
+        <p className="text-center text-xs uppercase tracking-wider text-[#6B7280]">
+          From the founding studios
         </p>
-        <blockquote className="mt-4 text-lg leading-relaxed text-[#1A1A2E] md:text-xl">
-          &ldquo;This app is everything that I&apos;d been looking for! It
-          allows me to work with my students to put together their practice
-          schedule, and creates an inviting space for them to record how
-          well they&apos;re able to stick to that schedule. I also love the
-          leader-board feature, this really appeals to my more competitive
-          students! Highly recommend.&rdquo;
-        </blockquote>
-        <p className="mt-5 text-sm font-semibold text-[#1A1A2E]">
-          Ellie Moorhouse
-        </p>
-        <p className="text-xs text-[#6B7280]">
-          EM:CAS — Founding Studio #1
-        </p>
+        <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+          <figure className="flex flex-col rounded-3xl border border-[#E8DFD3] bg-[#FAF6EF] p-8 md:p-10">
+            <blockquote className="text-lg leading-relaxed text-[#1A1A2E]">
+              &ldquo;This app is everything that I&apos;d been looking for! It
+              allows me to work with my students to put together their practice
+              schedule, and creates an inviting space for them to record how
+              well they&apos;re able to stick to that schedule. I also love the
+              leader-board feature, this really appeals to my more competitive
+              students! Highly recommend.&rdquo;
+            </blockquote>
+            <figcaption className="mt-5">
+              <span className="text-sm font-semibold text-[#1A1A2E]">
+                Ellie Moorhouse
+              </span>
+              <span className="ml-2 text-xs text-[#6B7280]">
+                EM:CAS — Founding Studio #1
+              </span>
+            </figcaption>
+          </figure>
+          <figure className="flex flex-col rounded-3xl border border-[#E8DFD3] bg-[#FAF6EF] p-8 md:p-10">
+            <blockquote className="text-lg leading-relaxed text-[#1A1A2E]">
+              &ldquo;Overall Mewstro has given me a clearer understanding of my
+              students&apos; activity in between lessons. It has allowed me
+              greater ease of sharing learning materials with my students and
+              has enabled me to have a source of contact which was missing
+              before using the app.&rdquo;
+            </blockquote>
+            <figcaption className="mt-5">
+              <span className="text-sm font-semibold text-[#1A1A2E]">
+                Josh Ingram
+              </span>
+              <span className="ml-2 text-xs text-[#6B7280]">
+                Founding Studio #2
+              </span>
+            </figcaption>
+            <Link
+              href="/mewstro/case-study"
+              className="mt-4 inline-block text-sm font-semibold text-[#2D8B7E] hover:underline"
+            >
+              Read Josh&apos;s first four weeks →
+            </Link>
+          </figure>
+        </div>
       </div>
     </section>
   );
@@ -735,7 +764,7 @@ export default function MewstroTeacherHomePage() {
       <Hero />
       <FoundingStrip />
       <DashboardTour />
-      <EllieQuoteBand />
+      <FoundingProofBand />
       <StudentSideBand />
       <ScreenshotCarousel
         brand={mewstro}

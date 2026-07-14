@@ -380,6 +380,24 @@ function TeacherApplyForm() {
         </p>
       </div>
 
+      <figure className="mb-10 rounded-3xl border border-[#E8DFD3] bg-[#FAF6EF] p-6 md:p-8">
+        <blockquote className="text-base leading-relaxed text-[#1A1A2E]">
+          &ldquo;Overall Mewstro has given me a clearer understanding of my
+          students&apos; activity in between lessons. It has allowed me greater
+          ease of sharing learning materials with my students and has enabled me
+          to have a source of contact which was missing before using the
+          app.&rdquo;
+        </blockquote>
+        <figcaption className="mt-4">
+          <span className="text-sm font-semibold text-[#1A1A2E]">
+            Josh Ingram
+          </span>
+          <span className="ml-2 text-xs text-[#6B7280]">
+            Founding Studio #2
+          </span>
+        </figcaption>
+      </figure>
+
       <form
         onSubmit={onSubmit}
         onFocusCapture={onFieldFocus}

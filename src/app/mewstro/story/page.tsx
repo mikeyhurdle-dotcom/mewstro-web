@@ -880,6 +880,36 @@ export default function MewstroStoryPage() {
         </div>
       </section>
 
+      {/* Josh quote — captured after his first four weeks as Founding Studio #2 */}
+      <section className="bg-[#FFFBF7] px-6 py-16">
+        <div className="mx-auto max-w-3xl rounded-3xl border border-[#E8DFD3] bg-[#FAF6EF] p-8 md:p-10">
+          <div className="flex flex-col items-center gap-4 text-center">
+            <p className="text-xs uppercase tracking-wider text-[#6B7280]">
+              From a founding studio
+            </p>
+            <blockquote className="text-lg leading-relaxed text-[#1A1A2E]">
+              &ldquo;Overall Mewstro has given me a clearer understanding of my
+              students&apos; activity in between lessons. It has allowed me
+              greater ease of sharing learning materials with my students and
+              has enabled me to have a source of contact which was missing
+              before using the app.&rdquo;
+            </blockquote>
+            <p className="text-sm font-semibold text-[#1A1A2E]">
+              Josh Ingram
+              <span className="ml-2 font-normal text-[#6B7280]">
+                Founding Studio #2
+              </span>
+            </p>
+            <Link
+              href="/mewstro/case-study"
+              className="text-sm font-semibold text-[#2D8B7E] hover:underline"
+            >
+              Read Josh&apos;s first four weeks →
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Dual CTA — self-fork */}
       <section className="bg-[#FFFBF7] px-6 py-20">
         <div className="mx-auto max-w-4xl">
