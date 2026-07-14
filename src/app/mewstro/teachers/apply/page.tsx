@@ -380,6 +380,7 @@ function TeacherApplyForm() {
         </p>
       </div>
 
+      {/* Founding Studio #2 (Josh Ingram) reassurance quote — approved for public use */}
       <figure className="mb-10 rounded-3xl border border-[#E8DFD3] bg-[#FAF6EF] p-6 md:p-8">
         <blockquote className="text-base leading-relaxed text-[#1A1A2E]">
           &ldquo;Overall Mewstro has given me a clearer understanding of my
