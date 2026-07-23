@@ -50,12 +50,17 @@ const faqs = [
   {
     question: "What does Mewstro actually do for my studio?",
     answer:
-      "You see every student's practice activity in one dashboard. Who's been practising, for how long, on what. A weekly digest email lands on a Sunday so you don't even have to log in just to know what's going on. There's a studio leaderboard ranked by weekly minutes, which you can toggle off per-student or for the whole studio, but it's consistently cited as the single biggest driver of students actually practising. An assignment system so your students have a clear to-do list between lessons. And Milestone Moment videos from your students whenever a tricky passage finally clicks.",
+      "You see every student's practice in one dashboard: what they worked on, for how long, and how it felt in their own words after each session. A weekly digest email lands on a Sunday so you don't even have to log in just to know what's going on. Assignments give your students a clear list between lessons, Studio Materials lets you share videos across your cohort, and Milestone Moment videos capture the moment a tricky passage finally clicks. There's also a studio leaderboard if that suits your teaching style; it's entirely optional and each student chooses whether they appear.",
+  },
+  {
+    question: "We're a school with more than one teacher. Does that work?",
+    answer:
+      "Yes. Pricing is based on how many students you have, not how many teachers. Up to 25 students on Studio, unlimited on Studio Unlimited, shared across however many teachers work with them.",
   },
   {
     question: "Why do I need to apply, why can't I just subscribe?",
     answer:
-      "Mewstro has just finished its founding pilot with Ellie Moorhouse, my own teacher, so I know it works in a real studio. The founding round is now open. The first five Founding Studios are hand-picked, with a personal conversation, 50% off for life, and direct input on where the product goes next. After those five, the next twenty join as Early Access at standard pricing and the standard 30-day trial, with their price locked in for two years, a Founding badge, and priority support. Once teacher #25 is in, it's standard self-serve signup.",
+      "You can just subscribe. The 30-day trial is open to any teacher from the pricing page, today. The application is only for the Founding Studio slots: the first five are hand-picked, with a personal conversation, 50% off for life, and direct input on where the product goes next. If you'd rather skip the conversation and get going, start the trial and you're in.",
   },
   {
     question: "What instruments are supported?",
@@ -65,12 +70,17 @@ const faqs = [
   {
     question: "Have students on Android?",
     answer:
-      "They can use the student portal — share your invite link and they can log practice, keep a streak, complete assignments, and show up on your studio leaderboard from the browser on any phone. The full native experience is on iPhone, with Android on the roadmap.",
+      "There's a native Android app in testing right now, and I can get your students early access if you ask. In the meantime the student portal covers them: share your invite link and they can log practice, keep a streak, complete assignments, and show up on your studio leaderboard from the browser on any phone.",
   },
   {
     question: "What happens if I cancel?",
     answer:
       "Your students keep full Mewstro access for 30 days after you cancel, and then drop to the Free tier. Their practice data stays on their devices regardless, nothing gets deleted. You can resubscribe at any point and everyone's access comes straight back.",
+  },
+  {
+    question: "Will Mewstro still exist next year?",
+    answer:
+      "A fair question, especially if you were burned when Tonara shut down. Mewstro is deliberately small: no investors, low running costs, and teacher subscriptions are the only thing it needs to keep going. And if it ever does have to close, I'll ship a full CSV export tool for everyone, free and paid users both, before anything goes offline. That's a hard commitment, and it's in writing on this page.",
   },
   {
     question: "Is student practice data private?",
@@ -154,9 +164,14 @@ function Hero() {
             </h1>
             <p className="mt-6 max-w-xl text-lg text-[#5A4E42] md:text-xl">
               A music practice app your whole studio uses. One teacher
-              subscription covers every student you invite, with the
-              leaderboard, heatmaps, milestone videos and weekly digest all
-              included. Students never pay a thing.
+              subscription covers every student you invite. See what each
+              student worked on, how it felt, and where they need you next,
+              with assignments, shared materials and a Sunday digest doing
+              the legwork. Students never pay a thing.
+            </p>
+            <p className="mt-3 max-w-xl text-sm text-[#5A4E42]">
+              Piano, guitar, voice, drums, strings, whatever you teach. On
+              iPhone and Apple Watch, with the Android app in testing.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
@@ -173,6 +188,17 @@ function Hero() {
                 See how it works
               </Link>
             </div>
+            <p className="mt-3 text-xs text-[#6B7280]">
+              Founding slots are by application. Prefer to just try it?{" "}
+              <Link
+                href="/mewstro/pricing"
+                className="font-semibold underline decoration-dotted underline-offset-4 hover:text-[#1A1A2E]"
+              >
+                Start the 30-day trial from the pricing page
+              </Link>
+              . Card required, one reminder email before the first charge,
+              one-click cancel.
+            </p>
             <p className="mt-5 text-sm text-[#5A4E42]">
               Built by{" "}
               <Link
@@ -360,19 +386,24 @@ function MockRow({
 function DashboardTour() {
   const panels = [
     {
-      icon: "🏆",
-      title: "Studio leaderboard",
-      body: "Weekly ranking by practice minutes. It&apos;s consistently cited as the single biggest driver of students actually practising, which tracks with what I&apos;ve seen. Toggleable per student if you&apos;d rather not show rankings.",
+      icon: "📝",
+      title: "Assignments",
+      body: "Set a task like &ldquo;work on bars 12&ndash;24, 15 min/day&rdquo; and pick which students it applies to. Their practice log auto-credits as they get the work done, so the thread of the lesson carries into the week.",
+    },
+    {
+      icon: "🎬",
+      title: "Studio Materials",
+      body: "Share videos with your whole studio or just the students who need them. A technique demo, a listening example, a piece you want everyone to hear. It&apos;s waiting in their app between lessons, not lost in a group chat.",
+    },
+    {
+      icon: "💭",
+      title: "Practice reflections",
+      body: "After each session, students note how it felt and what they want to tackle next. You see the reflection alongside the session, so you know how the week actually went, not just how long it lasted.",
     },
     {
       icon: "📈",
       title: "Per-student heatmap",
-      body: "90-day calendar at a glance. Spot the student who was on fire and then dropped off, and the one quietly building a 40-day streak without making a fuss.",
-    },
-    {
-      icon: "📝",
-      title: "Assignments",
-      body: "Set a task like &ldquo;work on bars 12&ndash;24, 15 min/day&rdquo; and pick which students it applies to. Their practice log auto-credits as they get the work done.",
+      body: "90-day calendar at a glance. Spot the student who was on fire and then dropped off, and the pattern behind the one who only ever practises the night before a lesson.",
     },
     {
       icon: "📹",
@@ -382,12 +413,17 @@ function DashboardTour() {
     {
       icon: "📨",
       title: "Weekly digest email",
-      body: "Every Sunday you get an email with the week&apos;s picture. Who&apos;s been practising, who hasn&apos;t, total studio minutes, and a couple of nudge links for anyone who needs a gentle poke. Means you don&apos;t have to log in just to know what&apos;s going on.",
+      body: "Every Sunday you get an email with the week&apos;s picture. Who&apos;s been practising, who hasn&apos;t, what they&apos;ve been working on, and a couple of nudge links for anyone who needs a gentle poke. Means you don&apos;t have to log in just to know what&apos;s going on.",
     },
     {
       icon: "🔗",
       title: "One invite code",
       body: "One code covers your whole studio. Your students tap &lsquo;I have a code&rsquo; during onboarding and their Mewstro unlocks. Apple handles the redemption bit behind the scenes, so none of them have to enter card details or anything like that.",
+    },
+    {
+      icon: "🏆",
+      title: "Leaderboard, if you want it",
+      body: "Some studios love a bit of friendly consistency competition. Others never switch it on. It&apos;s entirely optional, and each student chooses whether they appear. When it&apos;s on, it celebrates showing up, and it never scolds anyone.",
     },
   ];
 
@@ -406,9 +442,10 @@ function DashboardTour() {
             Everything a busy music teacher actually needs.
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base text-[#5A4E42]">
-            Six things I&apos;ve seen actually shift how students practise.
-            I&apos;ve deliberately kept it to that, so there&apos;s nothing
-            else cluttering up your view.
+            The handful of things I&apos;ve seen actually shift how students
+            practise. Deliberately kept to that, so there&apos;s nothing
+            else cluttering up your view. The aim is intent in every
+            session, not minutes on a clock.
           </p>
         </div>
         <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -477,14 +514,15 @@ function FoundingProofBand() {
                 Josh Ingram
               </span>
               <span className="ml-2 text-xs text-[#6B7280]">
-                Founding Studio #2
+                Piano, guitar &amp; voice — Founding Studio #2
               </span>
             </figcaption>
             <Link
               href="/mewstro/case-study"
               className="mt-4 inline-block text-sm font-semibold text-[#2D8B7E] hover:underline"
             >
-              Read Josh&apos;s first four weeks →
+              How the invisible week between lessons became visible in four
+              weeks →
             </Link>
           </figure>
         </div>
@@ -511,6 +549,16 @@ function StudentSideBand() {
           Milestone Moments, and Mewstro the mascot in all nine of his
           moods. Basically everything Mewstro can do. Students never get
           shown an upsell anywhere in the app.
+        </p>
+        <p className="mx-auto mt-4 max-w-2xl text-sm text-[#5A4E42]">
+          Students{" "}
+          <a
+            href={mewstro.links.appStore}
+            className="font-semibold underline decoration-dotted underline-offset-4 hover:text-[#1A1A2E]"
+          >
+            download Mewstro from the App Store
+          </a>{" "}
+          and join your studio with your invite code.
         </p>
       </div>
     </section>
@@ -633,7 +681,9 @@ function PricingPreview() {
           </h2>
           <p className="mt-3 text-sm text-[#5A4E42]">
             Basically comes down to how many students you teach. More than
-            25, or 25 and under.
+            25, or 25 and under. Either way it works out around £1 per
+            student per month or less, against lesson fees of £30 or more
+            a week. 30-day free trial on both.
           </p>
         </div>
         <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -653,7 +703,8 @@ function PricingPreview() {
             </p>
             <div className="mt-6 rounded-xl bg-[#FAF6EF] p-4 text-xs text-[#6B7280]">
               <strong className="text-[#1A1A2E]">Founding Studio rate:</strong>{" "}
-              £7.49/mo for life (50% off) for the first 10 studios in.
+              £7.49/mo for life (50% off) for the first 5 studios in. About
+              60p per student per month with a full studio.
             </div>
           </div>
 
@@ -679,7 +730,7 @@ function PricingPreview() {
             </p>
             <div className="mt-6 rounded-xl bg-white/10 p-4 text-xs text-white/90">
               <strong className="text-white">Founding Studio rate:</strong>{" "}
-              £12.49/mo for life (50% off) for the first 10 studios in.
+              £12.49/mo for life (50% off) for the first 5 studios in.
             </div>
           </div>
         </div>

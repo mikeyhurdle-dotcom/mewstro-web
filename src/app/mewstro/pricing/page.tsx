@@ -27,13 +27,17 @@ const teacherTiers: Array<{
     price: "£14.99",
     period: "/ month",
     annual: "or £149/year, saves you £30",
-    description: "Up to 25 students in your studio.",
+    description:
+      "Up to 25 students in your studio. About 60p per student per month with a full studio.",
     features: [
       "Full teacher dashboard",
       "See every student's practice at a glance",
-      "Studio leaderboard, ranked by weekly minutes",
+      "Assignments: set the week's task, watch it get done",
+      "Studio Materials: share videos with your whole studio or just the students who need them",
+      "Practice reflections: how each session felt, in the student's own words",
       "Practice heatmap and trends per student",
       "Milestone Moment videos from your students",
+      "Optional studio leaderboard (off by default for any student who'd rather not)",
       "One invite code that your students redeem inside the app",
       "Every enrolled student gets full Mewstro included",
       "Lesson notes integration (link a Google Doc)",
@@ -74,6 +78,7 @@ const soloTiers = [
       "1 instrument",
       "7-day practice history",
       "Daily streak counter",
+      "Daily practice reminders with smart timing",
       "Metronome (iPhone)",
       "Mewstro the mascot (basic moods)",
       "Ad-free, always",
@@ -143,14 +148,15 @@ function BuiltWithTeachersCard() {
           Josh Ingram
         </span>
         <span className="ml-2 text-xs text-[#6B7280]">
-          Founding Studio #2
+          Piano, guitar &amp; voice — Founding Studio #2
         </span>
       </figcaption>
       <Link
         href="/mewstro/case-study"
         className="mt-4 inline-block text-sm font-semibold text-[#2D8B7E] hover:underline"
       >
-        Read Josh&apos;s first four weeks →
+        How the invisible week between lessons became visible in four
+        weeks →
       </Link>
     </figure>
   );
@@ -194,7 +200,10 @@ export default function MewstroPricingPage() {
             </h2>
             <p className="mt-3 text-[#6B7280]">
               Basically comes down to how many students you teach. More
-              than 25, or 25 and under.
+              than 25, or 25 and under. Either way it works out around £1
+              per student per month or less, against lesson fees of £30 or
+              more a week. And it&apos;s student count, not teacher count:
+              a school with two or three teachers shares one subscription.
             </p>
           </div>
 
@@ -311,7 +320,8 @@ export default function MewstroPricingPage() {
             <p className="mt-3 text-[#6B7280] max-w-2xl mx-auto">
               I&apos;m opening the door in tiers. The earlier you come in,
               the better the deal and the more say you have on where
-              Mewstro goes next.
+              Mewstro goes next. Whenever you join, the 30-day trial is
+              open today; the tiers just decide which perks come with it.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -410,8 +420,16 @@ export default function MewstroPricingPage() {
               You can still use Mewstro
             </h2>
             <p className="mt-3 text-[#6B7280]">
-              Solo learners can download the app for free, and unlock
-              everything with Premium.
+              Solo learners can{" "}
+              <a
+                href="https://apps.apple.com/app/mewstro/id6761615884"
+                className="font-semibold text-[#2D8B7E] hover:underline"
+              >
+                download the app for free
+              </a>
+              , and unlock everything with Premium. Teacher-invited
+              students never see any of this: there&apos;s no upsell
+              anywhere in the app for them.
             </p>
           </div>
 
@@ -472,11 +490,17 @@ export default function MewstroPricingPage() {
             </p>
             <div className="mt-6 rounded-xl bg-white border border-[#E8DFD3] p-4 text-sm text-[#6B7280]">
               <strong className="text-[#1A1A2E]">How it works:</strong>{" "}
-              Your teacher generates a code from their dashboard. You
-              download the app, tap &ldquo;I have an invite code&rdquo;
-              during onboarding, paste the code, and your account
-              unlocks. Apple handles the redemption behind the scenes,
-              so you don&apos;t have to enter any card details.
+              Your teacher generates a code from their dashboard. You{" "}
+              <a
+                href="https://apps.apple.com/app/mewstro/id6761615884"
+                className="font-semibold text-[#2D8B7E] hover:underline"
+              >
+                download the app
+              </a>
+              , tap &ldquo;I have an invite code&rdquo; during
+              onboarding, paste the code, and your account unlocks.
+              Apple handles the redemption behind the scenes, so you
+              don&apos;t have to enter any card details.
             </div>
           </div>
         </div>
