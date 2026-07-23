@@ -23,6 +23,7 @@ const GROUPS: {
       "Per-student assignments — set a task for one student from their page",
       "Edit a student's repertoire from your dashboard",
       "Student web portal — students practise from any browser",
+      "Android app for students",
     ],
   },
   {
@@ -48,7 +49,7 @@ const GROUPS: {
     heading: "In progress",
     status: "progress",
     blurb: "What we're building next.",
-    items: ["Combined instruments (guitar + vocals)", "Android app"],
+    items: ["Combined instruments (guitar + vocals)"],
   },
 ];
 

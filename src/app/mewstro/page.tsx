@@ -70,7 +70,7 @@ const faqs = [
   {
     question: "Have students on Android?",
     answer:
-      "There's a native Android app in testing right now, and I can get your students early access if you ask. In the meantime the student portal covers them: share your invite link and they can log practice, keep a streak, complete assignments, and show up on your studio leaderboard from the browser on any phone.",
+      "Yes, they're covered. There's a native Android app for students, and the student portal also works from the browser on any phone: log practice, keep a streak, complete assignments, and show up on the studio leaderboard. Nobody in your studio gets left out over their phone.",
   },
   {
     question: "What happens if I cancel?",
@@ -171,7 +171,7 @@ function Hero() {
             </p>
             <p className="mt-3 max-w-xl text-sm text-[#5A4E42]">
               Piano, guitar, voice, drums, strings, whatever you teach. On
-              iPhone and Apple Watch, with the Android app in testing.
+              iPhone, Apple Watch and Android.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
