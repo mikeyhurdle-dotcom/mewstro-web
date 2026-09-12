@@ -2,10 +2,7 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import {
-  getEntitledStudios,
-  verifyPasswordAndLogin,
-} from "@/lib/teacher-auth";
+import { getEntitledStudios } from "@/lib/teacher-auth";
 import { createTeacherAuthClient } from "@/lib/teacher/supabase/server";
 
 /**
@@ -15,16 +12,6 @@ import { createTeacherAuthClient } from "@/lib/teacher/supabase/server";
  * actions with the directive inside the function body do not wire up
  * reliably in Next 16.
  */
-
-/** Legacy studio-password fallback (unchanged behaviour). */
-export async function loginAction(formData: FormData): Promise<void> {
-  const password = (formData.get("password") as string | null)?.trim() ?? "";
-  const ok = await verifyPasswordAndLogin(password);
-  if (ok) {
-    redirect("/teacher");
-  }
-  redirect("/teacher/login?error=1");
-}
 
 /**
  * Builds the absolute callback URL from the request's own host so the
