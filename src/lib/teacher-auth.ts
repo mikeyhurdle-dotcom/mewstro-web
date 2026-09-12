@@ -4,77 +4,19 @@ import { createTeacherAuthClient } from "@/lib/teacher/supabase/server";
 import { getServerSupabase } from "@/lib/supabase";
 
 /**
- * Teacher dashboard auth — DUAL MODE during the magic-link transition
- * (see Mewstro Docs/Architecture/Teacher-Magic-Link-Auth-Design.md).
+ * Teacher dashboard authentication and authorization.
  *
- * Mode 1 — legacy shared password (Phase 1 fallback, unchanged):
- *   Each configured password maps to a single studio name; the cookie
- *   stores the resolved studio so subsequent requests know which tenant
- *   to scope queries to.
- *
- *   Configured studios:
- *     TEACHER_DASHBOARD_PASSWORD       → "EM:CAS"             (Ellie's pilot)
- *     TEACHER_DASHBOARD_PASSWORD_DEMO  → "Mewstro Studio"     (sales/marketing)
- *     TEACHER_DASHBOARD_PASSWORD_TEST  → "Mewstro (Test)"     (Mikey's testing)
- *     TEACHER_DASHBOARD_PASSWORD_JOSH  → "Josh Ingram Studio" (Founding Studio pilot)
- *
- * Mode 2 — Supabase magic link (primary):
- *   The teacher is a real Supabase Auth user; entitlement is
- *   `mewstro_studios.teacher_email` matching their verified email
- *   (case-insensitive, active studios only). A teacher may own several
- *   studios; the `mewstro_teacher_studio` selector cookie picks the
- *   active one and is re-validated against the entitlement list on
- *   every request, so it can never point at someone else's studio.
- *
- * `getActiveStudioName()` resolves from whichever mode authenticated,
- * legacy cookie first — so every existing call site works unchanged for
- * both session kinds.
+ * Supabase Auth proves identity. An active `mewstro_studios` row whose
+ * `teacher_email` exactly matches the verified user's email grants studio
+ * access. The selector cookie only chooses among those server-derived
+ * entitlements; it is never itself treated as proof of access.
  */
 
-const COOKIE_NAME = "mewstro_teacher_session";
+const LEGACY_COOKIE_NAME = "mewstro_teacher_session";
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
 
 /** Selector cookie: which of the teacher's entitled studios is active. */
-const STUDIO_SELECTOR_COOKIE = "mewstro_teacher_studio";
-
-function getPasswordToStudioMap(): Record<string, string> {
-  const map: Record<string, string> = {};
-  const ellie = process.env.TEACHER_DASHBOARD_PASSWORD;
-  const demo = process.env.TEACHER_DASHBOARD_PASSWORD_DEMO;
-  const test = process.env.TEACHER_DASHBOARD_PASSWORD_TEST;
-  const josh = process.env.TEACHER_DASHBOARD_PASSWORD_JOSH;
-  if (ellie) map[ellie] = "EM:CAS";
-  if (demo) map[demo] = "Mewstro Studio";
-  if (test) map[test] = "Mewstro (Test)";
-  if (josh) map[josh] = "Josh Ingram Studio";
-  if (Object.keys(map).length === 0) {
-    throw new Error(
-      "No TEACHER_DASHBOARD_PASSWORD* env vars set. Add at least one in Vercel (and .env.local for dev).",
-    );
-  }
-  return map;
-}
-
-function getValidStudioNames(): Set<string> {
-  return new Set(Object.values(getPasswordToStudioMap()));
-}
-
-export async function verifyPasswordAndLogin(
-  submitted: string,
-): Promise<boolean> {
-  const studio = getPasswordToStudioMap()[submitted];
-  if (!studio) return false;
-
-  const cookieStore = await cookies();
-  cookieStore.set(COOKIE_NAME, studio, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: COOKIE_MAX_AGE_SECONDS,
-  });
-  return true;
-}
+export const STUDIO_SELECTOR_COOKIE = "mewstro_teacher_studio";
 
 export interface EntitledStudio {
   id: string;
@@ -90,10 +32,11 @@ export interface EntitledStudio {
 export async function getEntitledStudios(
   email: string,
 ): Promise<EntitledStudio[]> {
+  const normalizedEmail = email.trim().toLowerCase();
   const supabase = getServerSupabase();
   const { data, error } = await supabase
     .from("mewstro_studios")
-    .select("id, studio_name")
+    .select("id, studio_name, teacher_email")
     .ilike("teacher_email", email.trim())
     .eq("is_active", true)
     .order("created_at", { ascending: true });
@@ -101,23 +44,23 @@ export async function getEntitledStudios(
     console.error("teacher-auth: entitled studios lookup failed", error);
     return [];
   }
-  return data ?? [];
-}
 
-/** Legacy password-cookie resolution — behaviour identical to pre-dual-mode. */
-async function getPasswordSessionStudio(): Promise<string | null> {
-  const cookieStore = await cookies();
-  const value = cookieStore.get(COOKIE_NAME)?.value;
-  if (!value) return null;
-  return getValidStudioNames().has(value) ? value : null;
+  // Recheck as values after the case-insensitive query. `%`, `_` and `*` are
+  // valid email characters but wildcard operators in PostgREST; the exact
+  // comparison prevents a crafted identity from gaining a pattern match.
+  return (data ?? [])
+    .filter(
+      (studio) =>
+        studio.teacher_email?.trim().toLowerCase() === normalizedEmail,
+    )
+    .map(({ id, studio_name }) => ({ id, studio_name }));
 }
 
 /**
- * Magic-link resolution: verified Supabase user → entitled studios →
- * active studio via the (validated) selector cookie, defaulting to the
- * teacher's first studio.
+ * Resolve the current server-verified Supabase identity. `getUser()` checks
+ * with Supabase Auth rather than trusting the user object stored in cookies.
  */
-async function getMagicLinkSessionStudio(): Promise<string | null> {
+async function getVerifiedTeacherEmail(): Promise<string | null> {
   if (
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -125,17 +68,33 @@ async function getMagicLinkSessionStudio(): Promise<string | null> {
     return null;
   }
 
-  let email: string | null = null;
   try {
     const supabase = await createTeacherAuthClient();
     const {
       data: { user },
+      error,
     } = await supabase.auth.getUser();
-    email = user?.email ?? null;
+    if (error) {
+      if (error.name !== "AuthSessionMissingError") {
+        console.warn("teacher-auth: Supabase session rejected", error);
+      }
+      return null;
+    }
+    const email = user?.email?.trim();
+    return email || null;
   } catch (err) {
     console.error("teacher-auth: Supabase session check failed", err);
     return null;
   }
+}
+
+/**
+ * Verified identity → entitled studios → validated selector, with a stable
+ * first-studio fallback. Exported uncached so the authorization boundary can
+ * be regression-tested directly; application callers use the cached wrapper.
+ */
+export async function resolveActiveStudioName(): Promise<string | null> {
+  const email = await getVerifiedTeacherEmail();
   if (!email) return null;
 
   const studios = await getEntitledStudios(email);
@@ -150,32 +109,29 @@ async function getMagicLinkSessionStudio(): Promise<string | null> {
 }
 
 /**
- * Returns the active studio name for the current session, or null when
- * not logged in. Dual-mode: the legacy password cookie wins (validated
- * against the currently-configured password map, so a rotated env var
- * still invalidates stale cookies), then the Supabase magic-link
- * session. Memoised per request — dashboard pages call this from the
- * layout, the page, and server actions in a single render.
+ * Returns the entitled active studio for the verified Supabase user, or null.
+ * Memoised per request because layouts, pages and actions may ask repeatedly.
  */
-export const getActiveStudioName = cache(
-  async (): Promise<string | null> => {
-    const passwordStudio = await getPasswordSessionStudio();
-    if (passwordStudio) return passwordStudio;
-    return getMagicLinkSessionStudio();
-  },
-);
+export const getActiveStudioName = cache(resolveActiveStudioName);
 
 export async function isTeacherLoggedIn(): Promise<boolean> {
   return (await getActiveStudioName()) !== null;
 }
 
 /**
- * Sets the active-studio selector for a magic-link teacher who owns more
- * than one studio. Must only be called from a Route Handler or Server
- * Action. The value is validated on every read, so setting it never
- * grants access — it only picks among entitled studios.
+ * Sets the selector only when the current verified identity is entitled to
+ * the requested studio. Reads validate it again, so a forged/stale selector
+ * can never grant cross-studio access.
  */
-export async function setActiveStudioSelector(studioId: string): Promise<void> {
+export async function setActiveStudioSelector(
+  studioId: string,
+): Promise<boolean> {
+  const email = await getVerifiedTeacherEmail();
+  if (!email) return false;
+
+  const studios = await getEntitledStudios(email);
+  if (!studios.some((studio) => studio.id === studioId)) return false;
+
   const cookieStore = await cookies();
   cookieStore.set(STUDIO_SELECTOR_COOKIE, studioId, {
     httpOnly: true,
@@ -184,12 +140,13 @@ export async function setActiveStudioSelector(studioId: string): Promise<void> {
     path: "/",
     maxAge: COOKIE_MAX_AGE_SECONDS,
   });
+  return true;
 }
 
-/** Clears both session kinds: password cookie, selector, Supabase session. */
+/** Clears Supabase auth, the selector, and any inert pre-fix legacy cookie. */
 export async function teacherLogout(): Promise<void> {
   const cookieStore = await cookies();
-  cookieStore.delete(COOKIE_NAME);
+  cookieStore.delete(LEGACY_COOKIE_NAME);
   cookieStore.delete(STUDIO_SELECTOR_COOKIE);
   try {
     const supabase = await createTeacherAuthClient();

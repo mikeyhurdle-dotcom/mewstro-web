@@ -3,9 +3,10 @@ import { createClient } from "@supabase/supabase-js";
 /**
  * Server-side Supabase client for the teacher dashboard.
  *
- * Uses the service role key to bypass RLS — the dashboard is protected by
- * the teacher password cookie (see `teacher-auth.ts`), so RLS-level auth
- * isn't available. We never expose this client to the browser.
+ * Uses the service role key to bypass RLS. Every teacher caller must first
+ * establish a verified Supabase identity and an active studio entitlement
+ * via `teacher-auth.ts`, then scope each query to that studio. We never
+ * expose this client to the browser.
  *
  * Required env vars on Vercel (and in .env.local for dev):
  *   - NEXT_PUBLIC_SUPABASE_URL         e.g. https://nspgvdytqsvnmbitbmey.supabase.co

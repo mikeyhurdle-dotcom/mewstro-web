@@ -43,8 +43,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // Teacher dashboard on any other host (mewstro.com/teacher, localhost):
-  // keep the magic-link Supabase session fresh. Never redirects — the
-  // password-cookie fallback must keep working (see the helper's docs).
+  // keep the verified Supabase session fresh. Authorization remains at the
+  // page/action data boundary rather than trusting a client cookie here.
   if (path.startsWith("/teacher")) {
     return refreshTeacherSession(request, (req) =>
       NextResponse.next({ request: req }),

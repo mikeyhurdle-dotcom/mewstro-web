@@ -3,8 +3,9 @@ import { getServerSupabase } from "./supabase";
 /**
  * Typed read helpers for the teacher dashboard. Every function here pulls
  * from the shared HobbyPulse Supabase project (mewstro_ prefix) and
- * filters to a single studio. Callers pass the active studio name —
- * resolved from the session cookie via `getActiveStudioName()`.
+ * filters to a single studio. Callers pass the active studio name resolved
+ * from a verified Supabase identity and explicit studio entitlement via
+ * `getActiveStudioName()`.
  *
  * `ELLIE_STUDIO_NAME` is kept as an exported constant only because the
  * Ellie daily-join-digest cron is studio-specific by design and references

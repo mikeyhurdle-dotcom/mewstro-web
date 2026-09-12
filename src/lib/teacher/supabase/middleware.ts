@@ -5,9 +5,8 @@ import { NextRequest, NextResponse } from "next/server";
  * Refreshes the Supabase session (if any) on /teacher requests so
  * magic-link teacher sessions don't silently expire after the 1-hour
  * access token. Unlike the student portal's updatePracticeSession this
- * NEVER redirects — the /teacher gate stays in the layout/pages, because
- * the legacy password cookie must keep authenticating teachers who have
- * no Supabase session at all (dual-mode transition).
+ * never redirects: the secure authorization gate stays close to each
+ * teacher data read and protected action.
  *
  * `buildResponse` lets the caller decide what the final response is
  * (plain next() or the studio.mewstro.com hostname rewrite) while this
@@ -21,8 +20,7 @@ export async function refreshTeacherSession(
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !anonKey) return buildResponse(request);
 
-  // Cheap skip: no Supabase auth cookie means nothing to refresh (pure
-  // password-cookie sessions take this path on every request).
+  // Cheap skip: no Supabase auth cookie means there is nothing to refresh.
   const hasAuthCookie = request.cookies
     .getAll()
     .some((c) => c.name.startsWith("sb-") && c.name.includes("-auth-token"));
