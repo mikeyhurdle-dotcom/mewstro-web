@@ -10,6 +10,11 @@ import { getServerSupabase } from "@/lib/supabase";
  * `teacher_email` exactly matches the verified user's email grants studio
  * access. The selector cookie only chooses among those server-derived
  * entitlements; it is never itself treated as proof of access.
+ *
+ * The session must also have been established by an emailed sign-in link.
+ * This project auto-confirms email sign-ups (the mobile apps depend on it),
+ * so a password account can carry any unused address without its owner ever
+ * seeing an email; only a clicked link proves control of the inbox.
  */
 
 const LEGACY_COOKIE_NAME = "mewstro_teacher_session";
@@ -17,6 +22,21 @@ const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
 
 /** Selector cookie: which of the teacher's entitled studios is active. */
 export const STUDIO_SELECTOR_COOKIE = "mewstro_teacher_studio";
+
+/** Sign-in methods (JWT `amr`) that prove the user controls the inbox. */
+const INBOX_PROVING_METHODS = new Set(["magiclink", "otp"]);
+
+/** `amr` entries arrive as `{ method, timestamp }` objects or bare strings. */
+function sessionProvesInbox(amr: unknown): boolean {
+  if (!Array.isArray(amr)) return false;
+  return amr.some((entry) => {
+    const method =
+      typeof entry === "string"
+        ? entry
+        : (entry as { method?: unknown } | null)?.method;
+    return typeof method === "string" && INBOX_PROVING_METHODS.has(method);
+  });
+}
 
 export interface EntitledStudio {
   id: string;
@@ -58,7 +78,8 @@ export async function getEntitledStudios(
 
 /**
  * Resolve the current server-verified Supabase identity. `getUser()` checks
- * with Supabase Auth rather than trusting the user object stored in cookies.
+ * with Supabase Auth rather than trusting the user object stored in cookies,
+ * and `getClaims()` verifies the token before its sign-in method is read.
  */
 async function getVerifiedTeacherEmail(): Promise<string | null> {
   if (
@@ -81,7 +102,18 @@ async function getVerifiedTeacherEmail(): Promise<string | null> {
       return null;
     }
     const email = user?.email?.trim();
-    return email || null;
+    if (!user || !email) return null;
+
+    const { data: verified, error: claimsError } =
+      await supabase.auth.getClaims();
+    if (claimsError || !verified) {
+      console.warn("teacher-auth: session claims rejected", claimsError);
+      return null;
+    }
+    if (verified.claims.sub !== user.id) return null;
+    if (!sessionProvesInbox(verified.claims.amr)) return null;
+
+    return email;
   } catch (err) {
     console.error("teacher-auth: Supabase session check failed", err);
     return null;

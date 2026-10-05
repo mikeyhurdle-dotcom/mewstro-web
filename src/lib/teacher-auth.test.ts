@@ -5,6 +5,7 @@ const state = vi.hoisted(() => ({
   cookieSets: [] as Array<{ name: string; value: string; options: unknown }>,
   cookieDeletes: [] as string[],
   getUser: vi.fn(),
+  getClaims: vi.fn(),
   signOut: vi.fn(),
   studios: [] as Array<{
     id: string;
@@ -35,6 +36,7 @@ vi.mock("@/lib/teacher/supabase/server", () => ({
   createTeacherAuthClient: vi.fn(async () => ({
     auth: {
       getUser: state.getUser,
+      getClaims: state.getClaims,
       signOut: state.signOut,
     },
   })),
@@ -90,6 +92,12 @@ const OTHER_STUDIO = {
   studio_name: "Other Studio",
   teacher_email: "other@example.com",
 };
+const TEACHER_USER = { id: "user-teacher", email: "teacher@example.com" };
+
+/** The session's verified claims: who it is and how they signed in. */
+function claims(amr: unknown, sub = TEACHER_USER.id) {
+  return { data: { claims: { sub, amr } }, error: null };
+}
 
 describe("teacher authorization", () => {
   beforeEach(() => {
@@ -104,6 +112,10 @@ describe("teacher authorization", () => {
     state.lookupError = null;
     state.getUser.mockReset();
     state.getUser.mockResolvedValue({ data: { user: null }, error: null });
+    state.getClaims.mockReset();
+    state.getClaims.mockResolvedValue(
+      claims([{ method: "magiclink", timestamp: 1 }]),
+    );
     state.signOut.mockReset();
     state.signOut.mockResolvedValue({ error: null });
   });
@@ -117,7 +129,7 @@ describe("teacher authorization", () => {
 
   it("keeps a verified teacher's entitled studio accessible", async () => {
     state.getUser.mockResolvedValue({
-      data: { user: { email: "teacher@example.com" } },
+      data: { user: TEACHER_USER },
       error: null,
     });
     state.studios = [OWN_STUDIO, SECOND_OWN_STUDIO, OTHER_STUDIO];
@@ -130,7 +142,7 @@ describe("teacher authorization", () => {
 
   it("rejects an authenticated identity without an active studio entitlement", async () => {
     state.getUser.mockResolvedValue({
-      data: { user: { email: "unknown@example.com" } },
+      data: { user: { id: TEACHER_USER.id, email: "unknown@example.com" } },
       error: null,
     });
 
@@ -139,7 +151,7 @@ describe("teacher authorization", () => {
 
   it("fails closed when Supabase returns user data alongside an auth error", async () => {
     state.getUser.mockResolvedValue({
-      data: { user: { email: "teacher@example.com" } },
+      data: { user: TEACHER_USER },
       error: new Error("invalid session"),
     });
     state.studios = [OWN_STUDIO];
@@ -147,9 +159,79 @@ describe("teacher authorization", () => {
     await expect(resolveActiveStudioName()).resolves.toBeNull();
   });
 
+  it.each(["password", "oauth", "anonymous"])(
+    "rejects a %s session even when its email owns a studio",
+    async (method) => {
+      state.getUser.mockResolvedValue({
+        data: { user: TEACHER_USER },
+        error: null,
+      });
+      state.getClaims.mockResolvedValue(claims([{ method, timestamp: 1 }]));
+      state.studios = [OWN_STUDIO];
+
+      await expect(resolveActiveStudioName()).resolves.toBeNull();
+      await expect(setActiveStudioSelector(OWN_STUDIO.id)).resolves.toBe(false);
+    },
+  );
+
+  it.each([
+    [[{ method: "otp", timestamp: 1 }]],
+    [["magiclink"]],
+    [[{ method: "magiclink", timestamp: 1 }, { method: "totp", timestamp: 2 }]],
+  ])("accepts a session established by an emailed link (%j)", async (amr) => {
+    state.getUser.mockResolvedValue({
+      data: { user: TEACHER_USER },
+      error: null,
+    });
+    state.getClaims.mockResolvedValue(claims(amr));
+    state.studios = [OWN_STUDIO];
+
+    await expect(resolveActiveStudioName()).resolves.toBe(
+      OWN_STUDIO.studio_name,
+    );
+  });
+
+  it("fails closed when the session claims cannot be verified", async () => {
+    state.getUser.mockResolvedValue({
+      data: { user: TEACHER_USER },
+      error: null,
+    });
+    state.getClaims.mockResolvedValue({
+      data: null,
+      error: new Error("bad signature"),
+    });
+    state.studios = [OWN_STUDIO];
+
+    await expect(resolveActiveStudioName()).resolves.toBeNull();
+  });
+
+  it("fails closed when the claims carry no sign-in method", async () => {
+    state.getUser.mockResolvedValue({
+      data: { user: TEACHER_USER },
+      error: null,
+    });
+    state.getClaims.mockResolvedValue(claims(undefined));
+    state.studios = [OWN_STUDIO];
+
+    await expect(resolveActiveStudioName()).resolves.toBeNull();
+  });
+
+  it("fails closed when the claims belong to a different user", async () => {
+    state.getUser.mockResolvedValue({
+      data: { user: TEACHER_USER },
+      error: null,
+    });
+    state.getClaims.mockResolvedValue(
+      claims([{ method: "magiclink", timestamp: 1 }], "user-someone-else"),
+    );
+    state.studios = [OWN_STUDIO];
+
+    await expect(resolveActiveStudioName()).resolves.toBeNull();
+  });
+
   it("ignores a forged cross-studio selector and stays inside the entitlement set", async () => {
     state.getUser.mockResolvedValue({
-      data: { user: { email: "teacher@example.com" } },
+      data: { user: TEACHER_USER },
       error: null,
     });
     state.studios = [OWN_STUDIO, OTHER_STUDIO];
@@ -162,7 +244,7 @@ describe("teacher authorization", () => {
 
   it("refuses to issue a selector for a studio the teacher does not own", async () => {
     state.getUser.mockResolvedValue({
-      data: { user: { email: "teacher@example.com" } },
+      data: { user: TEACHER_USER },
       error: null,
     });
     state.studios = [OWN_STUDIO, OTHER_STUDIO];
@@ -173,7 +255,7 @@ describe("teacher authorization", () => {
 
   it("issues the selector only for a currently entitled studio", async () => {
     state.getUser.mockResolvedValue({
-      data: { user: { email: "teacher@example.com" } },
+      data: { user: TEACHER_USER },
       error: null,
     });
     state.studios = [OWN_STUDIO, OTHER_STUDIO];
