@@ -849,7 +849,7 @@ export default function MewstroStoryPage() {
         </article>
       </section>
 
-      {/* Ellie quote — captured after her founding pilot wrapped */}
+      {/* Ellie quote — captured after her pilot wrapped */}
       <section className="bg-white px-6 py-16">
         <div className="mx-auto max-w-3xl rounded-3xl border border-[#E8DFD3] bg-[#FAF6EF] p-8 md:p-10">
           <div className="flex flex-col items-center gap-4 text-center">
@@ -860,7 +860,7 @@ export default function MewstroStoryPage() {
               height={72}
             />
             <p className="text-xs uppercase tracking-wider text-[#6B7280]">
-              From our founding teacher
+              From my piano teacher
             </p>
             <blockquote className="text-lg leading-relaxed text-[#1A1A2E]">
               &ldquo;This app is everything that I&apos;d been looking for!
@@ -873,39 +873,9 @@ export default function MewstroStoryPage() {
             <p className="text-sm font-semibold text-[#1A1A2E]">
               Ellie Moorhouse
               <span className="ml-2 font-normal text-[#6B7280]">
-                EM:CAS — Founding Studio #1
+                EM:CAS, the piano studio Mewstro was built in
               </span>
             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Josh quote — captured after his first four weeks as Founding Studio #2 */}
-      <section className="bg-[#FFFBF7] px-6 py-16">
-        <div className="mx-auto max-w-3xl rounded-3xl border border-[#E8DFD3] bg-[#FAF6EF] p-8 md:p-10">
-          <div className="flex flex-col items-center gap-4 text-center">
-            <p className="text-xs uppercase tracking-wider text-[#6B7280]">
-              From a founding studio
-            </p>
-            <blockquote className="text-lg leading-relaxed text-[#1A1A2E]">
-              &ldquo;Overall Mewstro has given me a clearer understanding of my
-              students&apos; activity in between lessons. It has allowed me
-              greater ease of sharing learning materials with my students and
-              has enabled me to have a source of contact which was missing
-              before using the app.&rdquo;
-            </blockquote>
-            <p className="text-sm font-semibold text-[#1A1A2E]">
-              Josh Ingram
-              <span className="ml-2 font-normal text-[#6B7280]">
-                Founding Studio #2
-              </span>
-            </p>
-            <Link
-              href="/mewstro/case-study"
-              className="text-sm font-semibold text-[#2D8B7E] hover:underline"
-            >
-              Read Josh&apos;s first four weeks →
-            </Link>
           </div>
         </div>
       </section>
@@ -924,17 +894,18 @@ export default function MewstroStoryPage() {
                 I&apos;m a music teacher
               </p>
               <h3 className="mt-2 text-2xl font-bold text-[#1A1A2E]">
-                Apply for a Founding Studio slot
+                Start a 30-day free trial for your studio
               </h3>
               <p className="mt-3 text-sm text-[#5A4E42]">
-                Five founding studios, 50% off for life, direct line to me.
-                Applications reviewed personally.
+                One subscription covers every student you invite. Card
+                required, one reminder before the first charge, cancel in
+                one click.
               </p>
               <Link
-                href="/mewstro/teachers/apply"
+                href="/mewstro/pricing"
                 className="mt-6 inline-block rounded-full bg-[#2D8B7E] px-6 py-3 text-sm font-semibold text-white transition-transform hover:scale-[1.02]"
               >
-                Apply to be a Founding Studio
+                See pricing and start the trial
               </Link>
             </div>
             <div className="rounded-3xl border border-[#E8DFD3] bg-white p-8 shadow-sm">

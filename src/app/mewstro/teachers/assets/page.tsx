@@ -54,12 +54,12 @@ export default function TeacherAssetsPage() {
           <strong className="text-[#1A1A2E]">Just browsing?</strong> Have a
           play with the form below to see what you&apos;d be sending out.
           You can download a sample with placeholder details, no commitment.
-          When you&apos;re ready, the Founding Teacher waitlist is{" "}
+          When you&apos;re ready, the 30-day free trial starts from the{" "}
           <Link
-            href="/mewstro/teachers/apply"
+            href="/mewstro/pricing"
             className="font-semibold text-[#2D8B7E] hover:underline"
           >
-            here
+            pricing page
           </Link>
           .
         </p>
@@ -146,13 +146,14 @@ export default function TeacherAssetsPage() {
           Not on Mewstro yet?
         </p>
         <Link
-          href="/mewstro/teachers/apply"
+          href="/mewstro/pricing"
           className="mt-3 inline-block rounded-full bg-[#2D8B7E] px-8 py-3 text-sm font-semibold text-white transition-transform hover:scale-[1.02]"
         >
-          Join the Founding Teacher waitlist
+          Start your 30-day free trial
         </Link>
         <p className="mt-3 text-xs text-[#6B7280]">
-          Five Founding Studio slots, by application only.
+          Card required, one reminder email before the first charge, cancel
+          in one click.
         </p>
       </div>
     </div>

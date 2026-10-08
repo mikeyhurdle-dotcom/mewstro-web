@@ -8,8 +8,9 @@
  *   Studio Unlimited  £24.99/mo  or £249/yr   (unlimited students)
  *
  * All prices GBP. 30-day free trial, card required at signup, first charge
- * on day 31. Founding Studios (first 5) get 50% off for life via a Stripe
- * promotion code with a forever-duration coupon.
+ * on day 31. The Founding Studio offer (50% off for life via a Stripe
+ * promotion code with a forever-duration coupon) closed in October 2026; the
+ * code path stays so studios promised it in 2026 are still honoured.
  *
  * Stripe Price IDs are injected via env vars so test mode and live mode can
  * use the same code. Amounts here are display-only — Stripe's Price objects

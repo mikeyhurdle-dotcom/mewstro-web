@@ -28,8 +28,8 @@ function getNavConfig(brand: Brand): {
         { label: "Support", href: brand.links.support },
       ],
       cta: {
-        label: "Apply",
-        href: `${base}/teachers/apply`,
+        label: "Start free trial",
+        href: `${base}/pricing`,
         isExternal: false,
       },
     };

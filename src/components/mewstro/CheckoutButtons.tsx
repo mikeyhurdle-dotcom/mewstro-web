@@ -6,7 +6,7 @@ import { useState } from "react";
  * Pricing-page CTA that starts a Stripe Checkout session for a teacher
  * tier. Rendered only when NEXT_PUBLIC_BILLING_ENABLED is "true" (the
  * server component decides); while the flag is off the pricing page keeps
- * its "Apply for Founding Studio access" links unchanged.
+ * its "Book a walkthrough" links instead.
  */
 
 type PlanKey = "studio" | "studio_unlimited";

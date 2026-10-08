@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { mewstro } from "@/config/brands";
-import { FOUNDING_SLOTS_LEFT } from "@/config/founding";
 import { ScreenshotCarousel, FaqSection } from "@/components/shared";
 import { MewstroJsonLd, FaqJsonLd } from "@/components/shared/JsonLd";
 import type { Screenshot } from "@/components/shared";
@@ -58,9 +57,9 @@ const faqs = [
       "Yes. Pricing is based on how many students you have, not how many teachers. Up to 25 students on Studio, unlimited on Studio Unlimited, shared across however many teachers work with them.",
   },
   {
-    question: "Why do I need to apply, why can't I just subscribe?",
+    question: "Do I need to talk to you before I start?",
     answer:
-      "You can just subscribe. The 30-day trial is open to any teacher from the pricing page, today. The application is only for the Founding Studio slots: the first five are hand-picked, with a personal conversation, 50% off for life, and direct input on where the product goes next. If you'd rather skip the conversation and get going, start the trial and you're in.",
+      "No. Start the 30-day trial from the pricing page and you're in, today. If you'd rather see it first, book a twenty-minute walkthrough: I do them personally, we set up your studio together, and you leave with the invite code ready to hand out.",
   },
   {
     question: "What instruments are supported?",
@@ -89,7 +88,7 @@ const faqs = [
   },
 ];
 
-function FoundingStrip() {
+function ExamPrepStrip() {
   return (
     <section
       className="px-6 py-6"
@@ -101,24 +100,23 @@ function FoundingStrip() {
             className="inline-flex h-10 w-10 items-center justify-center rounded-full text-white"
             style={{ backgroundColor: TEAL }}
           >
-            ✦
+            ♪
           </span>
           <div>
             <p className="text-sm font-semibold text-[#1A1A2E]">
-              The founding round is open — {FOUNDING_SLOTS_LEFT} of 5 Founding
-              Studios left.
+              Students working towards a grade exam?
             </p>
             <p className="text-xs text-[#5A4E42]">
-              50% off for life, a direct line to me, and first say on where
-              the product goes. Hand-picked, by application.
+              Pieces, scales, sight-reading and aural in one practice plan,
+              with recordings so they can hear the progress.
             </p>
           </div>
         </div>
         <Link
-          href="/mewstro/teachers/apply"
+          href="/mewstro/exam-prep"
           className="inline-block rounded-full bg-[#1A1A2E] px-5 py-2 text-xs font-semibold text-white hover:opacity-90"
         >
-          Apply for a slot →
+          Mewstro for exam prep →
         </Link>
       </div>
     </section>
@@ -175,11 +173,11 @@ function Hero() {
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
-                href="/mewstro/teachers/apply"
+                href="/mewstro/pricing"
                 className="inline-block rounded-full px-7 py-3.5 text-base font-semibold text-white transition-transform hover:scale-[1.02]"
                 style={{ backgroundColor: TEAL }}
               >
-                Apply for Founding Studio access
+                Start your 30-day free trial
               </Link>
               <Link
                 href="#how-it-works"
@@ -189,15 +187,15 @@ function Hero() {
               </Link>
             </div>
             <p className="mt-3 text-xs text-[#6B7280]">
-              Founding slots are by application. Prefer to just try it?{" "}
+              Card required, one reminder email before the first charge,
+              one-click cancel. Want to see it first?{" "}
               <Link
-                href="/mewstro/pricing"
+                href="/mewstro/teachers/apply"
                 className="font-semibold underline decoration-dotted underline-offset-4 hover:text-[#1A1A2E]"
               >
-                Start the 30-day trial from the pricing page
+                Book a twenty-minute walkthrough with me
               </Link>
-              . Card required, one reminder email before the first charge,
-              one-click cancel.
+              .
             </p>
             <p className="mt-5 text-sm text-[#5A4E42]">
               Built by{" "}
@@ -475,14 +473,14 @@ function DashboardTour() {
   );
 }
 
-function FoundingProofBand() {
+function ProofBand() {
   return (
     <section className="bg-white px-6 py-16">
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-3xl">
         <p className="text-center text-xs uppercase tracking-wider text-[#6B7280]">
-          From the founding studios
+          From a real studio
         </p>
-        <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="mt-8">
           <figure className="flex flex-col rounded-3xl border border-[#E8DFD3] bg-[#FAF6EF] p-8 md:p-10">
             <blockquote className="text-lg leading-relaxed text-[#1A1A2E]">
               &ldquo;This app is everything that I&apos;d been looking for! It
@@ -497,33 +495,9 @@ function FoundingProofBand() {
                 Ellie Moorhouse
               </span>
               <span className="ml-2 text-xs text-[#6B7280]">
-                EM:CAS — Founding Studio #1
+                EM:CAS, the piano studio Mewstro was built in
               </span>
             </figcaption>
-          </figure>
-          <figure className="flex flex-col rounded-3xl border border-[#E8DFD3] bg-[#FAF6EF] p-8 md:p-10">
-            <blockquote className="text-lg leading-relaxed text-[#1A1A2E]">
-              &ldquo;Overall Mewstro has given me a clearer understanding of my
-              students&apos; activity in between lessons. It has allowed me
-              greater ease of sharing learning materials with my students and
-              has enabled me to have a source of contact which was missing
-              before using the app.&rdquo;
-            </blockquote>
-            <figcaption className="mt-5">
-              <span className="text-sm font-semibold text-[#1A1A2E]">
-                Josh Ingram
-              </span>
-              <span className="ml-2 text-xs text-[#6B7280]">
-                Piano, guitar &amp; voice — Founding Studio #2
-              </span>
-            </figcaption>
-            <Link
-              href="/mewstro/case-study"
-              className="mt-4 inline-block text-sm font-semibold text-[#2D8B7E] hover:underline"
-            >
-              How the invisible week between lessons became visible in four
-              weeks →
-            </Link>
           </figure>
         </div>
       </div>
@@ -702,9 +676,8 @@ function PricingPreview() {
               full Mewstro included.
             </p>
             <div className="mt-6 rounded-xl bg-[#FAF6EF] p-4 text-xs text-[#6B7280]">
-              <strong className="text-[#1A1A2E]">Founding Studio rate:</strong>{" "}
-              £7.49/mo for life (50% off) for the first 5 studios in. About
-              60p per student per month with a full studio.
+              About 60p per student per month with a full studio. 30-day
+              free trial, card required, one reminder before the first charge.
             </div>
           </div>
 
@@ -729,8 +702,8 @@ function PricingPreview() {
               features as I&apos;m building them.
             </p>
             <div className="mt-6 rounded-xl bg-white/10 p-4 text-xs text-white/90">
-              <strong className="text-white">Founding Studio rate:</strong>{" "}
-              £12.49/mo for life (50% off) for the first 5 studios in.
+              Same 30-day free trial. Move between plans from your billing
+              page whenever your studio changes size.
             </div>
           </div>
         </div>
@@ -740,7 +713,7 @@ function PricingPreview() {
             className="text-sm font-semibold hover:underline"
             style={{ color: TEAL }}
           >
-            See full pricing + founding tier comparison →
+            See full pricing →
           </Link>
         </div>
       </div>
@@ -756,20 +729,20 @@ function FinalCTA() {
     >
       <div className="mx-auto max-w-2xl">
         <h2 className="text-3xl font-bold text-[#1A1A2E] md:text-4xl">
-          The founding round is open. {FOUNDING_SLOTS_LEFT} of 5 spots left.
+          See your studio&apos;s week by next Sunday.
         </h2>
         <p className="mt-4 text-base text-[#5A4E42]">
-          50% off for life, a direct line to me, and first say on where
-          Mewstro goes next. Apply now and I&apos;ll speak to you
-          personally — they&apos;re going fast.
+          Thirty days free, card required, one reminder email before the
+          first charge, cancel in one click. Every student you invite gets
+          the full app included and never pays a thing.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Link
-            href="/mewstro/teachers/apply"
+            href="/mewstro/pricing"
             className="inline-block rounded-full px-8 py-4 text-base font-semibold text-white transition-transform hover:scale-[1.02]"
             style={{ backgroundColor: TEAL }}
           >
-            Apply for Founding Studio access
+            Start your 30-day free trial
           </Link>
           <Link
             href="/mewstro/teachers/assets"
@@ -813,9 +786,9 @@ export default function MewstroTeacherHomePage() {
       <MewstroJsonLd />
       <FaqJsonLd faqs={faqs} />
       <Hero />
-      <FoundingStrip />
+      <ExamPrepStrip />
       <DashboardTour />
-      <FoundingProofBand />
+      <ProofBand />
       <StudentSideBand />
       <ScreenshotCarousel
         brand={mewstro}

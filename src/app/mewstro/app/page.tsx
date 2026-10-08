@@ -14,7 +14,7 @@ import type { Feature, Screenshot } from "@/components/shared";
 export const metadata: Metadata = {
   title: "Mewstro for solo learners",
   description:
-    "Mewstro is a free music practice app with a cat mascot who celebrates every session you log. Any instrument, any level, always ad-free. Premium at £6.99/mo unlocks everything.",
+    "Mewstro is a music practice app with a cat mascot who celebrates every session you log. Any instrument, any level, always ad-free. Start free, or unlock everything with Premium at £4.99/mo.",
 };
 
 const features: Feature[] = [
@@ -98,7 +98,7 @@ const faqs = [
   {
     question: "What do I get with Premium?",
     answer:
-      "Unlimited instruments, full practice history, Milestone Moment videos, repertoire tracking with BPM, a weekly planner, all the widgets, the Apple Watch app with haptic metronome, Siri Shortcuts, the full nine-mood mascot, themes, and CSV data export. It&apos;s £6.99/mo or £59.99/yr which saves you 28%. Your first 7 days are free via Apple&apos;s Introductory Offer.",
+      "Unlimited instruments, full practice history, Milestone Moment videos, repertoire tracking with BPM, a weekly planner, all the widgets, the Apple Watch app with haptic metronome, Siri Shortcuts, the full nine-mood mascot, themes, and CSV data export. It&apos;s £4.99/mo or £39.99/yr which saves you 33%. Your first 7 days are free via Apple&apos;s Introductory Offer.",
   },
   {
     question: "Does my teacher use Mewstro?",
@@ -136,7 +136,7 @@ function TeacherEscapeHatch() {
             </p>
           </div>
           <Link
-            href="/mewstro/teachers/apply"
+            href="/mewstro"
             className="inline-block whitespace-nowrap rounded-full border border-[#2D8B7E] px-5 py-2.5 text-sm font-semibold text-[#2D8B7E] hover:bg-[#2D8B7E]/5"
           >
             I&apos;m a teacher
@@ -185,14 +185,14 @@ function SoloPricingBand() {
             </span>
             <h3 className="mt-4 text-2xl font-bold">Premium</h3>
             <p className="mt-2 text-4xl font-bold">
-              £6.99
+              £4.99
               <span className="text-base font-normal text-white/80">
                 {" "}
                 / month
               </span>
             </p>
             <p className="mt-1 text-sm text-white/80">
-              or £59.99/year, saves you 28%
+              or £39.99/year, saves you 33%
             </p>
             <p className="mt-3 text-sm text-white/90">
               Everything Mewstro can do. 7-day free trial via Apple.

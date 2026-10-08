@@ -12,7 +12,6 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { getConsentStatus, trackLink, studioSizeTier } from "@/lib/tealium";
-import { FOUNDING_SLOTS_LEFT } from "@/config/founding";
 import { resolveAttribution } from "@/lib/utm";
 
 const INSTRUMENTS = [
@@ -302,13 +301,13 @@ function TeacherApplyForm() {
             />
           </div>
           <h1 className="text-3xl font-bold text-[#1A1A2E]">
-            Application received — I&apos;ll be in touch personally.
+            Got it. I&apos;ll be in touch personally.
           </h1>
           <p className="mt-4 text-base text-[#5A4E42]">
-            The founding round is open and I&apos;m hand-picking the studios
-            — there are {FOUNDING_SLOTS_LEFT} of 5 spots left. I&apos;ll email
-            you personally to set up a quick call. Applications are handled in
-            order, so the sooner the better.
+            I&apos;ll email you within a day or two to find twenty minutes
+            that suit. If you&apos;d rather not wait, the 30-day trial is open
+            from the pricing page now and we can do the walkthrough once your
+            studio exists.
           </p>
           <div className="mt-8 rounded-2xl bg-[#FAF6EF] p-6 text-left text-sm text-[#5A4E42]">
             <p className="font-semibold text-[#1A1A2E]">
@@ -317,16 +316,17 @@ function TeacherApplyForm() {
             <ol className="mt-3 space-y-2">
               <li>
                 <strong>1.</strong> I email you personally to set up a
-                15-minute call, in order of application.
+                twenty-minute call.
               </li>
               <li>
-                <strong>2.</strong> We make sure Mewstro&apos;s a genuine
-                fit for your studio.
+                <strong>2.</strong> On the call we set up your studio
+                together and you leave with the invite code ready to hand
+                out.
               </li>
               <li>
-                <strong>3.</strong> Founding Studios get 50% off for life,
-                a direct line to me, and first say on where Mewstro goes
-                next. Only {FOUNDING_SLOTS_LEFT} of 5 spots left.
+                <strong>3.</strong> Your 30-day trial starts when you do.
+                Card required, one reminder email before the first charge,
+                cancel in one click.
               </li>
             </ol>
           </div>
@@ -365,39 +365,25 @@ function TeacherApplyForm() {
     <div className="mx-auto max-w-3xl px-6 py-14 md:py-20">
       <div className="mb-10 text-center">
         <p className="text-sm font-semibold uppercase tracking-wider text-[#2D8B7E]">
-          Founding Studios — now open
+          Book a walkthrough
         </p>
         <h1 className="mt-2 text-4xl font-bold text-[#1A1A2E] md:text-5xl">
-          Claim one of the last {FOUNDING_SLOTS_LEFT} founding spots.
+          Twenty minutes with me before you start.
         </h1>
         <p className="mt-5 text-base text-[#5A4E42] md:text-lg">
-          The founding pilot with my own piano teacher Ellie is done —
-          Mewstro&apos;s proven in a real studio. The founding round is open
-          and I&apos;m hand-picking the studios. Apply now and I&apos;ll speak
-          to you personally. You get 50% off for life, a direct line to me,
-          and first say on where the product goes next. Only{" "}
-          {FOUNDING_SLOTS_LEFT} of 5 slots left, by application.
+          You can start the 30-day trial from the{" "}
+          <Link
+            href="/mewstro/pricing"
+            className="font-semibold text-[#2D8B7E] hover:underline"
+          >
+            pricing page
+          </Link>{" "}
+          any time without talking to anyone. If you&apos;d rather see it
+          first, tell me a little about your studio and I&apos;ll set up a
+          short call: what your students see, what lands on your dashboard,
+          and how the first week tends to go.
         </p>
       </div>
-
-      {/* Founding Studio #2 (Josh Ingram) reassurance quote — approved for public use */}
-      <figure className="mb-10 rounded-3xl border border-[#E8DFD3] bg-[#FAF6EF] p-6 md:p-8">
-        <blockquote className="text-base leading-relaxed text-[#1A1A2E]">
-          &ldquo;Overall Mewstro has given me a clearer understanding of my
-          students&apos; activity in between lessons. It has allowed me greater
-          ease of sharing learning materials with my students and has enabled me
-          to have a source of contact which was missing before using the
-          app.&rdquo;
-        </blockquote>
-        <figcaption className="mt-4">
-          <span className="text-sm font-semibold text-[#1A1A2E]">
-            Josh Ingram
-          </span>
-          <span className="ml-2 text-xs text-[#6B7280]">
-            Founding Studio #2
-          </span>
-        </figcaption>
-      </figure>
 
       <form
         onSubmit={onSubmit}
@@ -574,9 +560,8 @@ function TeacherApplyForm() {
               className="mt-0.5 h-4 w-4 rounded border-[#E8DFD3] text-[#2D8B7E] focus:ring-[#2D8B7E]"
             />
             <span>
-              I&apos;m happy to be contacted about my application and
-              Mewstro&apos;s Founding Teacher programme. You won&apos;t be
-              added to any mailing list.
+              I&apos;m happy to be contacted about setting up Mewstro for
+              my studio. You won&apos;t be added to any mailing list.
             </span>
           </label>
         </div>
@@ -592,7 +577,7 @@ function TeacherApplyForm() {
 
         <div className="mt-8 flex flex-col-reverse items-stretch gap-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-[#6B7280]">
-            No spam. I read every application personally.
+            No spam. I read every request personally.
           </p>
           <button
             type="submit"
@@ -601,7 +586,7 @@ function TeacherApplyForm() {
           >
             {submit.status === "submitting"
               ? "Submitting..."
-              : "Apply for a Founding Studio"}
+              : "Book a walkthrough"}
           </button>
         </div>
       </form>

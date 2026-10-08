@@ -120,7 +120,7 @@ export default async function TeacherBillingPage({
           <h2 className="text-lg font-bold">No subscription yet</h2>
           <p className="mt-3 text-sm leading-relaxed text-[#5A4E42]">
             This studio isn&apos;t on a paid plan — you&apos;re likely on a
-            pilot or Founding Studio arrangement handled directly with Mikey.
+            pilot arrangement handled directly with Mikey.
             When it&apos;s time to set up billing, it starts from the pricing
             page with a 30-day free trial.
           </p>
