@@ -32,6 +32,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     {
       url: "https://mewstro.com/teachers/apply",
       lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      url: "https://mewstro.com/exam-prep",
+      lastModified: now,
       changeFrequency: "weekly",
       priority: 0.9,
     },

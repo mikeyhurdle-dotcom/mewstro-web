@@ -163,7 +163,7 @@ function sendNewApplicantAlert(parsed: IntakePayload): void {
   const location = [parsed.location, parsed.country].filter(Boolean).join(", ") || "—";
 
   const text = [
-    `New Founding Teacher waitlist application`,
+    `New teacher walkthrough request`,
     ``,
     `Name:       ${parsed.firstName} ${parsed.lastName}`,
     `Email:      ${parsed.email}`,
@@ -177,7 +177,7 @@ function sendNewApplicantAlert(parsed: IntakePayload): void {
   ].join("\n");
 
   const html = `<!doctype html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#1a1a1a;line-height:1.6;max-width:520px;margin:0 auto;padding:24px;">
-<h2 style="color:#2D8B7E;margin-top:0;">New waitlist application 🎵</h2>
+<h2 style="color:#2D8B7E;margin-top:0;">New walkthrough request 🎵</h2>
 <table style="width:100%;border-collapse:collapse;font-size:14px;">
   <tr><td style="padding:6px 0;color:#6B7280;width:120px;">Name</td><td style="padding:6px 0;font-weight:600;">${escapeHtml(`${parsed.firstName} ${parsed.lastName}`)}</td></tr>
   <tr><td style="padding:6px 0;color:#6B7280;">Email</td><td style="padding:6px 0;"><a href="mailto:${escapeHtml(parsed.email)}" style="color:#2D8B7E;">${escapeHtml(parsed.email)}</a></td></tr>
@@ -194,7 +194,7 @@ function sendNewApplicantAlert(parsed: IntakePayload): void {
   void postmark.sendEmail({
     From: "Mewstro <noreply@mewstro.com>",
     To: notifyEmail,
-    Subject: `New Founding Teacher application — ${parsed.firstName} ${parsed.lastName}`,
+    Subject: `Walkthrough request: ${parsed.firstName} ${parsed.lastName}`,
     TextBody: text,
     HtmlBody: html,
     MessageStream: "outbound",
@@ -279,7 +279,7 @@ export async function POST(req: NextRequest) {
     .insert({
       teacher_id: teacher.id,
       activity_type: "inbound_application",
-      subject: "Founding Teacher waitlist application",
+      subject: "Teacher walkthrough request (website)",
       body: parsed.notes ?? null,
       metadata,
       performed_by: "website",

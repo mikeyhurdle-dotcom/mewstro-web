@@ -105,7 +105,8 @@ export default function MewstroRoadmapPage() {
           ))}
 
           <p className="pt-2 text-center text-sm text-[#6B7280]">
-            Founding Studios get first input on what we build next.
+            Teachers on Mewstro get first say on what gets built next. Tell
+            me what your studio is missing.
           </p>
         </div>
       </section>
